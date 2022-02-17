@@ -27,6 +27,7 @@ kotlin {
         all {
             languageSettings {
                 optIn("com.google.devtools.ksp.KspExperimental")
+                optIn("com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview")
             }
         }
     }

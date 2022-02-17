@@ -1,18 +1,19 @@
 package io.mockative.krouton
 
-import com.google.devtools.ksp.getDeclaredFunctions
-import com.google.devtools.ksp.getDeclaredProperties
-import com.google.devtools.ksp.processing.*
-import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.mockative.krouton.generator.KroutonWriter
 import io.mockative.krouton.generator.Logger
-import java.io.OutputStreamWriter
 
 class KroutonSymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
     options: Map<String, String>
-) : SymbolProcessor {
+) : SymbolProcessor, Logger {
 
     private var processed = false
 
@@ -41,28 +42,11 @@ class KroutonSymbolProcessor(
         if (kroutonClassDecs.isNotEmpty()) {
             debug("Writing Kroutons.kt file")
 
-            // Create mock(KClass) functions
-            val sources = resolver.getAllFiles().toList().toTypedArray()
-            val kroutonsFile = codeGenerator.createNewFile(Dependencies(false, *sources), "io.mockative.krouton", "Kroutons")
-            val kroutonsFileWriter = OutputStreamWriter(kroutonsFile)
-            kroutonsFileWriter.appendLine("package io.mockative.krouton")
-            kroutonsFileWriter.appendLine()
-
-            val kroutonWriter = KroutonWriter(kroutonsFileWriter, object : Logger {
-                override fun info(message: String) {
-                    this@KroutonSymbolProcessor.info(message)
-                }
-
-                override fun debug(message: String) {
-                    this@KroutonSymbolProcessor.debug(message)
-                }
-            })
+            val kroutonWriter = KroutonWriter(codeGenerator, this)
 
             kroutonClassDecs.forEach { classDec ->
                 kroutonWriter.writeKroutons(classDec)
             }
-
-            kroutonsFileWriter.flush()
 
             info("Finished generating ${kroutonWriter.numberOfWrittenProperties} Krouton properties and ${kroutonWriter.numberOfWrittenFunctions} Krouton functions for ${kroutonClassDecs.size} annotated types")
         }
@@ -72,13 +56,13 @@ class KroutonSymbolProcessor(
         return emptyList()
     }
 
-    private fun info(message: String) {
+    override fun info(message: String) {
         if (isInfoLogEnabled) {
             logger.info("[Krouton] $message")
         }
     }
 
-    private fun debug(message: String) {
+    override fun debug(message: String) {
         if (isDebugLogEnabled) {
             logger.info("[Krouton] $message")
         }

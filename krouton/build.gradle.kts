@@ -11,6 +11,10 @@ kotlin {
     sourceSets {
         // Common
         val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
+            }
+
             kotlin.srcDirs("$buildDir/generated/krouton-code-generator")
         }
 

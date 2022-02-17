@@ -1,5 +1,6 @@
-package io.mockative.krouton
+package io.mockative.krouton.sample
 
+import io.mockative.krouton.Krouton
 import kotlinx.coroutines.flow.Flow
 
 @Krouton
@@ -9,6 +10,10 @@ interface AuthenticationService {
 
     suspend fun login(request: AuthenticationRequest?): AuthenticationResponse
 
+    /**
+     * Doc string
+     * @param request Param String
+     */
     fun getFlows(request: AuthenticationRequest): Flow<AuthenticationResponse?>
 
 }
