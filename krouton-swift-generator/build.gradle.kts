@@ -21,7 +21,7 @@ kotlin {
                 // KotlinPoet
                 implementation("com.squareup:kotlinpoet:1.10.2")
                 implementation("com.squareup:kotlinpoet-ksp:1.10.2")
-                
+
                 // SwiftPoet
                 implementation("io.outfoxx:swiftpoet:1.3.1")
             }

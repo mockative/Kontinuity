@@ -30,7 +30,7 @@ class KroutonClassWriter(
 
     fun writeKroutons() {
         val packageName = className.packageName
-        val fileName = className.simpleNames.first()
+        val fileName = className.simpleNames.joinToString(".")
 
         fileSpec = FileSpec.builder(packageName, fileName)
 

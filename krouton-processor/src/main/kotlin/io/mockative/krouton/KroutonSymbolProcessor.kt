@@ -8,6 +8,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.mockative.krouton.generator.KroutonWriter
 import io.mockative.krouton.generator.Logger
+import io.mockative.krouton.swift.KroutonSwiftGenerator
 
 class KroutonSymbolProcessor(
     private val codeGenerator: CodeGenerator,
@@ -49,6 +50,11 @@ class KroutonSymbolProcessor(
             }
 
             info("Finished generating ${kroutonWriter.numberOfWrittenProperties} Krouton properties and ${kroutonWriter.numberOfWrittenFunctions} Krouton functions for ${kroutonClassDecs.size} annotated types")
+
+            val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, "shared")
+            kroutonClassDecs.forEach { classDec ->
+                swiftGenerator.addExtensionFile(classDec)
+            }
         }
 
         processed = true

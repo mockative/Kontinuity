@@ -8,6 +8,7 @@ pluginManagement {
     plugins {
         kotlin("multiplatform") version "1.6.0" apply false
         id("com.google.devtools.ksp") version "1.6.0-1.0.1" apply false
+        id("org.jetbrains.kotlin.jvm") version "1.6.10"
     }
 }
 
@@ -22,3 +23,4 @@ include(":krouton-code-generator")
 if (startParameter.projectProperties.containsKey("check_publication")) {
     include(":tools:check-publication")
 }
+include(":krouton-swift-generator")
