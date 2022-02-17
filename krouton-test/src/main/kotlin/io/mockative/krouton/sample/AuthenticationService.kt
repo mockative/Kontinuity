@@ -10,10 +10,12 @@ interface AuthenticationService {
 
     suspend fun login(request: AuthenticationRequest?): AuthenticationResponse
 
+    suspend fun foo(args: List<String?>)
+
     /**
      * Doc string
      * @param request Param String
      */
-    fun getFlows(request: AuthenticationRequest): Flow<AuthenticationResponse?>
+    fun getFlows(request: AuthenticationRequest): Flow<List<AuthenticationResponse?>>
 
 }

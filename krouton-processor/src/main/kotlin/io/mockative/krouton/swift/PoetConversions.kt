@@ -37,7 +37,7 @@ import io.outfoxx.swiftpoet.TypeVariableName as SwiftTypeVariableName
 
 fun KotlinTypeName.toSwiftTypeName(moduleName: String): SwiftTypeName {
     if (isNullable) {
-        return OPTIONAL.parameterizedBy(copy(nullable = false).toSwiftTypeName(moduleName))
+        return copy(nullable = false).toSwiftTypeName(moduleName).makeOptional()
     }
 
     return when (this) {
