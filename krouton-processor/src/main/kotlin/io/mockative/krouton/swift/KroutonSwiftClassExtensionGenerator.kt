@@ -334,7 +334,7 @@ class KroutonSwiftClassExtensionGenerator(
                 )
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonFuture { resolve in ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }")
+                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }")
                         .build()
                 )
                 .returns(swiftReturnTypeName)
@@ -393,7 +393,7 @@ class KroutonSwiftClassExtensionGenerator(
                 .throws(true)
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonFuture { resolve in ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
+                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
                         .build()
                 )
                 .returns(swiftReturnTypeName)

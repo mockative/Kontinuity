@@ -4,7 +4,6 @@ import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
-import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.*
@@ -79,7 +78,7 @@ class KroutonClassWriter(
                     .addParameter("onElement", getOnElementType(elementTypeName))
                     .addParameter("onSuccess", getOnSuccessType(UNIT))
                     .addParameter("onFailure", getOnFailureType())
-                    .returns(CANCELLABLE)
+                    .returns(CANCELLATION)
                     .addCode(getFlowPropertyBody(propertyName))
                     .build()
             )
@@ -127,7 +126,7 @@ class KroutonClassWriter(
                     .addParameters(function.getParameterSpecs(typeParameterResolver))
                     .addParameter("onSuccess", getOnSuccessType(returnTypeName))
                     .addParameter("onFailure", getOnFailureType())
-                    .returns(CANCELLABLE)
+                    .returns(CANCELLATION)
                     .addCode(getSuspendWrapperFunctionBody(function))
                     .build()
             )
@@ -165,7 +164,7 @@ class KroutonClassWriter(
                     .addParameter("onElement", getOnElementType(elementTypeName))
                     .addParameter("onSuccess", getOnSuccessType(UNIT))
                     .addParameter("onFailure", getOnFailureType())
-                    .returns(CANCELLABLE)
+                    .returns(CANCELLATION)
                     .addCode(getFlowFunctionBody(function))
                     .build()
             )
