@@ -1,22 +1,20 @@
 package io.mockative.krouton.swift
 
+import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.ksp.TypeParameterResolver
-import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
-import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import com.squareup.kotlinpoet.ksp.*
+import io.mockative.krouton.generator.Errors
 import io.mockative.krouton.generator.Logger
 import io.mockative.krouton.generator.isFlow
+import io.mockative.krouton.generator.modifiers
 import io.outfoxx.swiftpoet.*
+import com.google.devtools.ksp.symbol.Modifier as KSPModifier
 
 class KroutonSwiftClassExtensionGenerator(
     private val codeGenerator: CodeGenerator,
@@ -51,9 +49,12 @@ class KroutonSwiftClassExtensionGenerator(
 
         // Properties
         classDec.getDeclaredProperties()
-            .forEach { property -> addPropertyExtension(property) }
+            .forEach { property -> addFlowPropertyExtension(property) }
 
         // Functions
+        classDec.getDeclaredFunctions()
+            .forEach { function -> addFunctionExtension(function) }
+
         val packageName = outputPackage.ifEmpty { className.packageName }
         val dependencies = Dependencies(false, classDec.containingFile!!)
 
@@ -62,7 +63,7 @@ class KroutonSwiftClassExtensionGenerator(
             .writeTo(codeGenerator, packageName, dependencies)
     }
 
-    private fun addPropertyExtension(property: KSPropertyDeclaration) {
+    private fun addFlowPropertyExtension(property: KSPropertyDeclaration) {
         val propertyName = property.simpleName.asString()
         logger?.debug("Adding property extension for ${className}.${propertyName}")
 
@@ -97,6 +98,72 @@ class KroutonSwiftClassExtensionGenerator(
                 .build()
         )
     }
+
+    private fun addFunctionExtension(function: KSFunctionDeclaration) {
+        when {
+            function.modifiers.contains(KSPModifier.SUSPEND) -> addFutureFunctionExtension(function)
+            else -> {}
+        }
+    }
+
+    private fun addFutureFunctionExtension(function: KSFunctionDeclaration) {
+        val functionName = function.simpleName.asString()
+        logger?.debug("Adding property extension for ${className}.${functionName}")
+
+        // The TypeParameterResolver is used to resolve type names
+        val kotlinTypeParameterResolver = function.typeParameters
+            .toTypeParameterResolver(classTypeParameterResolver)
+
+        // The function return type is used as the type argument for the OnSuccess callback
+        val kotlinReturnType = function.getReturnType()
+        val kotlinReturnTypeName = kotlinReturnType.toTypeName(kotlinTypeParameterResolver)
+
+        val swiftReturnTypeName = DeclaredTypeName.typeName("Combine.Future")
+            .parameterizedBy(
+                TypeVariableName.typeVariable(kotlinReturnTypeName.toSwiftTypeName(moduleName).toString()),
+                TypeVariableName.typeVariable("Swift.Error")
+            )
+
+        val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
+
+        val swiftArgumentList = if (function.parameters.isEmpty()) "" else {
+            function.parameters.joinToString { parameter -> ", $parameter: $parameter" }
+        }
+
+        extensionSpec.addFunction(
+            FunctionSpec.builder(functionName)
+                .addTypeVariables(
+                    function.typeParameters
+                        .map { it.toTypeVariableName(kotlinTypeParameterResolver) }
+                        .map { it.toSwiftTypeVariableName() }
+                )
+                .addParameters(
+                    function.parameters.map {
+                        ParameterSpec
+                            .builder(
+                                parameterName = it.name!!.asString(),
+                                type = it.type
+                                    .toTypeName(kotlinTypeParameterResolver)
+                                    .toSwiftTypeName(moduleName),
+                                modifiers = it.modifiers
+                                    .toSwiftModifiers()
+                                    .toTypedArray()
+                            )
+                            .build()
+                    }
+                )
+                .addCode(
+                    CodeBlock.builder()
+                        .addStatement("Future { resolve in ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: { resolve(.success($0)) }, onFailure: { resolve(.failure($2)) }) }")
+                        .build()
+                )
+                .returns(swiftReturnTypeName)
+                .build()
+        )
+    }
+
+    private fun KSFunctionDeclaration.getReturnType(): KSTypeReference =
+        returnType ?: throw Errors.functionReturnTypeCouldNotBeResolved(classDec, this)
 
     private fun KSTypeReference.getFlowElementKotlinTypeNameOrNull(
         declaration: KSDeclaration,
