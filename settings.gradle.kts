@@ -14,13 +14,11 @@ pluginManagement {
 
 rootProject.name = "krouton"
 
+if (startParameter.projectProperties.containsKey("check_publication")) {
+    include(":tools:check-publication")
+}
+
 include(":shared")
 include(":krouton")
 include(":krouton-processor")
 include(":krouton-test")
-include(":krouton-code-generator")
-
-if (startParameter.projectProperties.containsKey("check_publication")) {
-    include(":tools:check-publication")
-}
-include(":krouton-swift-generator")
