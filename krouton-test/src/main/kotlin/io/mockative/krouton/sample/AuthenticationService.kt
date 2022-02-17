@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Krouton
 interface AuthenticationService {
 
-    var isLoggingIn: Flow<Boolean>
+    var isLoggingIn: Flow<Boolean?>
 
     suspend fun login(request: AuthenticationRequest?): AuthenticationResponse
 
