@@ -1,9 +1,6 @@
 package io.mockative.krouton
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.mockative.krouton.generator.KroutonWriter
@@ -21,8 +18,33 @@ class KroutonSymbolProcessor(
     private val isDebugLogEnabled: Boolean = options["krouton.logging"]?.lowercase() == "debug"
     private val isInfoLogEnabled: Boolean = isDebugLogEnabled || options["krouton.logging"]?.lowercase() == "info"
 
+    private val moduleName: String = options["krouton.darwin.moduleName"] ?: "shared"
+    private val swiftOutputDir: String? = options["krouton.swift.outputDir"]
+
+    private fun addKroutonKitSwift() {
+        debug("Writing KroutonKit.swift file")
+
+        // TODO Investigate feasibility of generating Swift files from resulting Kotlin Module header file (e.g. `shared.h`), to deal with potential incremental compilation / cleaning issues.
+        // TODO Consider using a top-level package/directory for ease-of-use in Xcode
+        // TODO Consider outputting a single file instead of multiple files to improve the developer experience in Xcode
+
+        javaClass.classLoader.getResourceAsStream("io/mockative/krouton/KroutonKit.swift")!!
+            .use { source ->
+                try {
+                    codeGenerator.createNewFile(Dependencies(true), "krouton", "KroutonKit", "swift")
+                        .use { destination ->
+                            source.copyTo(destination)
+                        }
+                } catch (e: FileAlreadyExistsException) {
+                    // Nothing
+                }
+            }
+    }
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
         debug("Starting")
+
+        addKroutonKitSwift()
 
         if (processed) {
             debug("Skipped: Already Processed")
@@ -37,25 +59,15 @@ class KroutonSymbolProcessor(
 
         debug("Processing")
 
-        val kroutonClassDecs = annotatedSymbols
+        val kroutonWriter = KroutonWriter(codeGenerator, this)
+        val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, moduleName, swiftOutputDir)
+
+        annotatedSymbols
             .mapNotNull { symbol -> symbol as? KSClassDeclaration }
-
-        if (kroutonClassDecs.isNotEmpty()) {
-            debug("Writing Kroutons.kt file")
-
-            val kroutonWriter = KroutonWriter(codeGenerator, this)
-
-            kroutonClassDecs.forEach { classDec ->
+            .forEach { classDec ->
                 kroutonWriter.writeKroutons(classDec)
-            }
-
-            info("Finished generating ${kroutonWriter.numberOfWrittenProperties} Krouton properties and ${kroutonWriter.numberOfWrittenFunctions} Krouton functions for ${kroutonClassDecs.size} annotated types")
-
-            val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, "shared")
-            kroutonClassDecs.forEach { classDec ->
                 swiftGenerator.addExtensionFile(classDec)
             }
-        }
 
         processed = true
 

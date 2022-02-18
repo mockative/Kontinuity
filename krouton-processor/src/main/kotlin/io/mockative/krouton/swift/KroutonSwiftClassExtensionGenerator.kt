@@ -14,11 +14,13 @@ import io.mockative.krouton.generator.Logger
 import io.mockative.krouton.generator.isFlow
 import io.mockative.krouton.generator.modifiers
 import io.outfoxx.swiftpoet.*
+import java.nio.file.Path
 import com.google.devtools.ksp.symbol.Modifier as KSPModifier
 
 class KroutonSwiftClassExtensionGenerator(
     private val codeGenerator: CodeGenerator,
     private val logger: Logger?,
+    private val outputDir: String?,
     private val classDec: KSClassDeclaration,
     private val moduleName: String,
 ) {
@@ -37,7 +39,6 @@ class KroutonSwiftClassExtensionGenerator(
         fileSpec = FileSpec.builder(fileName)
             .addImport("Foundation")
             .addImport("Combine")
-            .addImport("Krouton")
             .addImport(moduleName)
 
         val extendedTypeSimpleName = className.simpleNames.joinToString(".")
@@ -58,11 +59,18 @@ class KroutonSwiftClassExtensionGenerator(
 
         // Write files
         val packageName = outputPackage.ifEmpty { className.packageName }
-        val dependencies = Dependencies(false, classDec.containingFile!!)
 
-        fileSpec.addExtension(extensionSpec.build())
-            .build()
-            .writeTo(codeGenerator, packageName, dependencies)
+        if (outputDir == null) {
+            val dependencies = Dependencies(false, classDec.containingFile!!)
+
+            fileSpec.addExtension(extensionSpec.build())
+                .build()
+                .writeTo(codeGenerator, "krouton", dependencies)
+        } else {
+            fileSpec.addExtension(extensionSpec.build())
+                .build()
+                .writeTo(Path.of(packageName.replace(".", "/"), fileSpec.name))
+        }
     }
 
     private fun addFunctionExtension(property: KSPropertyDeclaration) {
@@ -156,7 +164,11 @@ class KroutonSwiftClassExtensionGenerator(
         when {
             function.modifiers.contains(KSPModifier.SUSPEND) -> {
                 addFutureFunctionExtension(function)
-                addAsyncFunctionExtension(function)
+
+                // Async generation is disabled while investigating the best signature for these,
+                // since the `AsyncThrowingStream` returning functions will clash with the
+                // non-async functions.
+                // addAsyncFunctionExtension(function)
             }
             else -> {
                 addFlowFunctionExtension(function)

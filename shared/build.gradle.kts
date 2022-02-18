@@ -36,6 +36,8 @@ kotlin {
 
                 implementation(project(":krouton"))
             }
+
+            kotlin.srcDir("build/generated/ksp/commonMain/kotlin")
         }
         val commonTest by getting {
             dependencies {
@@ -56,7 +58,9 @@ kotlin {
             dependsOn(androidAndroidTest)
         }
 
-        val iosMain by getting
+        val iosMain by getting {
+            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
+        }
         val iosTest by getting {
             languageSettings {
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
@@ -94,7 +98,7 @@ android {
 }
 
 dependencies {
-    ksp(project(":krouton-processor"))
+    add("kspIos", project(":krouton-processor"))
 }
 
 ksp {

@@ -10,12 +10,14 @@ import io.mockative.krouton.generator.Logger
 class KroutonSwiftGenerator(
     private val codeGenerator: CodeGenerator,
     private val logger: Logger?,
-    private val moduleName: String,
+    private val defaultModuleName: String,
+    private val outputDir: String?,
 ) {
     fun addExtensionFile(classDec: KSClassDeclaration) {
         val annotation = classDec.getAnnotationsByType(Krouton::class).first()
         if (annotation.generate) {
-            val classGenerator = KroutonSwiftClassExtensionGenerator(codeGenerator, logger, classDec, moduleName)
+            val moduleName = annotation.moduleName.ifEmpty { defaultModuleName }
+            val classGenerator = KroutonSwiftClassExtensionGenerator(codeGenerator, logger, outputDir, classDec, moduleName)
             classGenerator.addExtensionFile(annotation.outputPackage)
         } else {
             logger?.debug("Skipping Krouton generation for the type `${classDec.toClassName()}` because generation was disabled using the Krouton annotation.")
