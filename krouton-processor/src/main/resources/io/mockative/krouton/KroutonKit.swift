@@ -1,5 +1,32 @@
+import Foundation
 import Combine
+import $moduleName$
 
+public protocol SinglePublisher: Publisher {
+    func sink(receiveResult: @escaping (Result<Output, Failure>) -> Void) -> AnyCancellable
+}
+
+extension SinglePublisher {
+    public func sink(receiveResult: @escaping (Result<Output, Failure>) -> Void) -> AnyCancellable {
+        var output: Output? = nil
+
+        return sink { completion in
+            switch completion {
+            case .failure(let error):
+                receiveResult(.failure(error))
+            case .finished:
+                receiveResult(.success(output!))
+            }
+        } receiveValue: { value in
+            output = value
+        }
+    }
+}
+
+extension KotlinThrowable: Error {}
+
+%file:Publisher+Async.swift%
+%file:SinglePublisher+Async.swift%
 private class KroutonSubscription: Subscription {
     private(set) var isCancelled: Bool = false
 
@@ -48,6 +75,9 @@ public struct KroutonPublisher<Output, Failure: Error> : Publisher {
     }
 }
 
+%file:KontinuityPublisher+Kotlin.swift%
+
+// MARK: KroutonFuture
 public struct KroutonFuture<Output, Failure: Error> : Publisher {
     public typealias Receiver = (
         @escaping (Output) -> Void,
@@ -70,3 +100,20 @@ public struct KroutonFuture<Output, Failure: Error> : Publisher {
         )
     }
 }
+
+extension KroutonFuture where Output == Void {
+    public typealias VoidReceiver = (
+        @escaping () -> Void,
+        @escaping (Failure) -> Void
+    ) -> Cancellation
+
+    public init(_ receive: @escaping VoidReceiver) {
+        self.init { receiveSuccess, receiveFailure in
+            receive({ receiveSuccess(()) }, receiveFailure)
+        }
+    }
+}
+
+extension KroutonFuture: SinglePublisher {}
+
+%file:KontinuityFuture+Kotlin.swift%

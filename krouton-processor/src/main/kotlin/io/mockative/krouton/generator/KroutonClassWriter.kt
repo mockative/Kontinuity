@@ -76,7 +76,7 @@ class KroutonClassWriter(
                     .addTypeVariables(property.getTypeVariables(typeParameterResolver))
                     .addParameter("receiver", className)
                     .addParameter("onElement", getOnElementType(elementTypeName))
-                    .addParameter("onSuccess", getOnSuccessType(UNIT))
+                    .addParameter("onSuccess", getOnSuccessType())
                     .addParameter("onFailure", getOnFailureType())
                     .returns(CANCELLATION)
                     .addCode(getFlowPropertyBody(propertyName))
@@ -116,6 +116,7 @@ class KroutonClassWriter(
         // The function return type is used as the type argument for the OnSuccess callback
         val returnType = function.getReturnType()
         val returnTypeName = returnType.toTypeName(typeParameterResolver)
+        val actualReturnTypeName = if (returnTypeName == UNIT) null else returnTypeName
 
         fileSpec
             .addImport("io.mockative.krouton", "invokeSuspend")
@@ -124,7 +125,7 @@ class KroutonClassWriter(
                     .addTypeVariables(function.getTypeVariables(typeParameterResolver))
                     .addParameter("receiver", className)
                     .addParameters(function.getParameterSpecs(typeParameterResolver))
-                    .addParameter("onSuccess", getOnSuccessType(returnTypeName))
+                    .addParameter("onSuccess", getOnSuccessType(actualReturnTypeName))
                     .addParameter("onFailure", getOnFailureType())
                     .returns(CANCELLATION)
                     .addCode(getSuspendWrapperFunctionBody(function))
@@ -162,7 +163,7 @@ class KroutonClassWriter(
                     .addParameter("receiver", className)
                     .addParameters(function.getParameterSpecs(typeParameterResolver))
                     .addParameter("onElement", getOnElementType(elementTypeName))
-                    .addParameter("onSuccess", getOnSuccessType(UNIT))
+                    .addParameter("onSuccess", getOnSuccessType())
                     .addParameter("onFailure", getOnFailureType())
                     .returns(CANCELLATION)
                     .addCode(getFlowFunctionBody(function))
@@ -189,8 +190,8 @@ class KroutonClassWriter(
         returnType = UNIT
     )
 
-    private fun getOnSuccessType(type: TypeName) = LambdaTypeName.get(
-        parameters = arrayOf(type),
+    private fun getOnSuccessType(type: TypeName? = null) = LambdaTypeName.get(
+        parameters = if (type == null) emptyArray() else arrayOf(type),
         returnType = UNIT
     )
 

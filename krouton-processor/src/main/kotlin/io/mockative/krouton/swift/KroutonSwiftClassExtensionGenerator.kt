@@ -103,12 +103,12 @@ class KroutonSwiftClassExtensionGenerator(
         val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
 
         extensionSpec.addProperty(
-            PropertySpec.builder(propertyName, swiftPropertyTypeName)
+            PropertySpec.builder("$propertyName$", swiftPropertyTypeName)
                 .getter(
                     FunctionSpec.getterBuilder()
                         .addCode(
                             CodeBlock.builder()
-                                .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}_${propertyName}(receiver: self, onElement: $0, onSuccess: $1, onFailure: $2) }")
+                                .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}.${propertyName}(receiver: self, onElement: $0, onSuccess: $1, onFailure: $2) }")
                                 .build()
                         )
                         .build()
@@ -141,7 +141,7 @@ class KroutonSwiftClassExtensionGenerator(
         val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
 
         extensionSpec.addProperty(
-            PropertySpec.builder(propertyName, swiftPropertyTypeName)
+            PropertySpec.builder("$propertyName$", swiftPropertyTypeName)
                 .addAttribute(
                     AttributeSpec.builder("available")
                         .addArguments("macOS 12.0", "iOS 15.0", "tvOS 15.0", "watchOS 8.0", "*")
@@ -151,7 +151,7 @@ class KroutonSwiftClassExtensionGenerator(
                     FunctionSpec.getterBuilder()
                         .addCode(
                             CodeBlock.builder()
-                                .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}_${propertyName}(receiver: self, onElement: $0, onSuccess: $1, onFailure: $2) }.values")
+                                .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}.${propertyName}(receiver: self, onElement: $0, onSuccess: $1, onFailure: $2) }.values")
                                 .build()
                         )
                         .build()
@@ -207,7 +207,7 @@ class KroutonSwiftClassExtensionGenerator(
         }
 
         extensionSpec.addFunction(
-            FunctionSpec.builder(functionName)
+            FunctionSpec.builder("$functionName$")
                 .addTypeVariables(
                     function.typeParameters
                         .map { it.toTypeVariableName(kotlinTypeParameterResolver) }
@@ -230,12 +230,25 @@ class KroutonSwiftClassExtensionGenerator(
                 )
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onElement: $0, onSuccess: $1, onFailure: $2) }")
+                        .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onElement: $0, onSuccess: $1, onFailure: $2) }")
                         .build()
                 )
+                .applyIfNotNull(function.docString) { addDoc(it.toSwiftDocString()) }
                 .returns(swiftPropertyTypeName)
                 .build()
         )
+    }
+
+    private inline fun <T, V : Any> T.applyIfNotNull(value: V?, block: T.(V) -> Unit): T {
+        return apply {
+            if (value != null) {
+                block(value)
+            }
+        }
+    }
+
+    private fun String.toSwiftDocString(): String {
+        return replace(Regex("""@param (\w+) """), "- Parameter $1: ")
     }
 
     private fun addAsyncThrowingStreamFunctionExtension(function: KSFunctionDeclaration) {
@@ -267,7 +280,7 @@ class KroutonSwiftClassExtensionGenerator(
         }
 
         extensionSpec.addFunction(
-            FunctionSpec.builder(functionName)
+            FunctionSpec.builder("$functionName$")
                 .addTypeVariables(
                     function.typeParameters
                         .map { it.toTypeVariableName(kotlinTypeParameterResolver) }
@@ -290,7 +303,7 @@ class KroutonSwiftClassExtensionGenerator(
                 )
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onElement: $0, onSuccess: $1, onFailure: $2) }.values")
+                        .addStatement("KroutonPublisher { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onElement: $0, onSuccess: $1, onFailure: $2) }.values")
                         .build()
                 )
                 .returns(swiftPropertyTypeName)
@@ -323,7 +336,7 @@ class KroutonSwiftClassExtensionGenerator(
         }
 
         extensionSpec.addFunction(
-            FunctionSpec.builder(functionName)
+            FunctionSpec.builder("$functionName$")
                 .addTypeVariables(
                     function.typeParameters
                         .map { it.toTypeVariableName(kotlinTypeParameterResolver) }
@@ -346,7 +359,7 @@ class KroutonSwiftClassExtensionGenerator(
                 )
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }")
+                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }")
                         .build()
                 )
                 .returns(swiftReturnTypeName)
@@ -375,7 +388,7 @@ class KroutonSwiftClassExtensionGenerator(
         val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
 
         extensionSpec.addFunction(
-            FunctionSpec.builder(functionName)
+            FunctionSpec.builder("$functionName$")
                 .addAttribute(
                     AttributeSpec.builder("available")
                         .addArguments("macOS 12.0", "iOS 15.0", "tvOS 15.0", "watchOS 8.0", "*")
@@ -405,7 +418,7 @@ class KroutonSwiftClassExtensionGenerator(
                 .throws(true)
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}_${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
+                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
                         .build()
                 )
                 .returns(swiftReturnTypeName)

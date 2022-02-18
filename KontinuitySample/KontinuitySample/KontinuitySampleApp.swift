@@ -1,11 +1,8 @@
-//
-//  KontinuitySampleApp.swift
-//  KontinuitySample
-//
-//  Created by Nicklas on 18/02/2022.
-//
-
 import SwiftUI
+import shared
+
+func foo(authenticationService: AuthenticationService) async throws {
+}
 
 @main
 struct KontinuitySampleApp: App {

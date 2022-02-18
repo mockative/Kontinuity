@@ -5,13 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-fun <T> collectFlow(flow: Flow<T>, onElement: (T) -> Unit, onSuccess: (Unit) -> Unit, onFailure: (Throwable) -> Unit): Cancellation {
+fun <T> collectFlow(flow: Flow<T>, onElement: (T) -> Unit, onSuccess: () -> Unit, onFailure: (Throwable) -> Unit): Cancellation {
     val mainScope = CoroutineScope(Dispatchers.Main.immediate)
 
     val job = mainScope.launch {
         try {
             flow.collect(onElement)
-            onSuccess(Unit)
+            onSuccess()
         } catch (error: Throwable) {
             onFailure(error)
         }

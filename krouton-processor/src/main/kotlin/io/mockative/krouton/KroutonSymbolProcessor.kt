@@ -21,6 +21,11 @@ class KroutonSymbolProcessor(
     private val moduleName: String = options["krouton.darwin.moduleName"] ?: "shared"
     private val swiftOutputDir: String? = options["krouton.swift.outputDir"]
 
+    fun getResourceString(path: String): String {
+        return javaClass.classLoader.getResourceAsStream(path)!!
+            .use { it.readAllBytes().decodeToString() }
+    }
+
     private fun addKroutonKitSwift() {
         debug("Writing KroutonKit.swift file")
 
@@ -28,17 +33,19 @@ class KroutonSymbolProcessor(
         // TODO Consider using a top-level package/directory for ease-of-use in Xcode
         // TODO Consider outputting a single file instead of multiple files to improve the developer experience in Xcode
 
-        javaClass.classLoader.getResourceAsStream("io/mockative/krouton/KroutonKit.swift")!!
-            .use { source ->
-                try {
-                    codeGenerator.createNewFile(Dependencies(true), "krouton", "KroutonKit", "swift")
-                        .use { destination ->
-                            source.copyTo(destination)
-                        }
-                } catch (e: FileAlreadyExistsException) {
-                    // Nothing
-                }
-            }
+        val kroutonKit = getResourceString("io/mockative/krouton/KroutonKit.swift")
+            .replace("\$moduleName\$", moduleName)
+            .replace("%file:Publisher+Async.swift%\n", "")
+            .replace("%file:SinglePublisher+Async.swift%\n", "")
+            .replace("%file:KontinuityPublisher+Kotlin.swift%", getResourceString("io/mockative/krouton/KontinuityPublisher+Kotlin.swift"))
+            .replace("%file:KontinuityFuture+Kotlin.swift%", getResourceString("io/mockative/krouton/KontinuityFuture+Kotlin.swift"))
+
+        try {
+            codeGenerator.createNewFile(Dependencies(true), "krouton", "KroutonKit", "swift")
+                .use { it.write(kroutonKit.encodeToByteArray()) }
+        } catch (e: FileAlreadyExistsException) {
+            // Nothing
+        }
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
