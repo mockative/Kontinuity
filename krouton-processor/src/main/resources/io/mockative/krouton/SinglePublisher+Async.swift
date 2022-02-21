@@ -25,10 +25,10 @@ extension SinglePublisher where Failure == Never {
             await withCheckedContinuation { continuation in
                 var cancellable: AnyCancellable? = nil
 
-                cancellable = sink { value in
+                cancellable = sink(receiveValue: { value in
                     continuation.resume(returning: value)
                     cancellable?.cancel()
-                }
+                })
             }
         }
     }

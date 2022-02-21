@@ -33,10 +33,17 @@ class KroutonSymbolProcessor(
         // TODO Investigate generating a Swift package
 
         val kroutonKit = getResourceString("io/mockative/krouton/KroutonKit.swift")
-            .replace("%file:Publisher+Async.swift%\n", "")
-            .replace("%file:SinglePublisher+Async.swift%\n", "")
             .replace("%file:KontinuityPublisher+NSNumber.swift%", getResourceString("io/mockative/krouton/KontinuityPublisher+NSNumber.swift"))
             .replace("%file:KontinuityFuture+NSNumber.swift%", getResourceString("io/mockative/krouton/KontinuityFuture+NSNumber.swift"))
+            .let {
+                if (SwiftFlags.shared.generateAsyncExtensions == null) {
+                    it.replace("%file:Publisher+Async.swift%\n", "")
+                        .replace("%file:SinglePublisher+Async.swift%\n", "")
+                } else {
+                    it.replace("%file:Publisher+Async.swift%\n", "")
+                        .replace("%file:SinglePublisher+Async.swift%", getResourceString("io/mockative/krouton/SinglePublisher+Async.swift"))
+                }
+            }
 
         try {
             codeGenerator.createNewFile(Dependencies(true), "krouton", "KroutonKit", "swift")
@@ -62,13 +69,12 @@ class KroutonSymbolProcessor(
 
         debug("Processing")
 
-        addKroutonKitSwift()
-
-        val kroutonWriter = KroutonWriter(codeGenerator, this)
-
         val swiftFlags = SwiftFlags.fromOptions(options)
         SwiftFlags.shared = swiftFlags // TODO Get rid of this static thing
 
+        addKroutonKitSwift()
+
+        val kroutonWriter = KroutonWriter(codeGenerator, this)
         val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, swiftFlags)
 
         annotatedSymbols

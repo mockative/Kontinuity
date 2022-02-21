@@ -105,4 +105,5 @@ ksp {
     arg("krouton.logging", "debug")
     arg("krouton.swift.intType", "Swift.Int")
     arg("krouton.swift.longType", "Swift.Int")
+    arg("krouton.swift.generateAsyncExtensions", "true")
 }
