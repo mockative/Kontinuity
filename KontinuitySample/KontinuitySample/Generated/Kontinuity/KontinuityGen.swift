@@ -30,7 +30,7 @@ extension AuthenticationService {
 
   @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
   func loginAsync(request: AuthenticationRequest?) async throws -> AuthenticationResponse {
-    KroutonFuture { AuthenticationServiceKt.login(receiver: self, request: request, onSuccess: $0, onFailure: $1) }.value
+    try await KroutonFuture { AuthenticationServiceKt.login(receiver: self, request: request, onSuccess: $0, onFailure: $1) }.value
   }
 
   func foo$(args: [String]) -> KroutonFuture<Swift.Void, Error> {
@@ -39,7 +39,7 @@ extension AuthenticationService {
 
   @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
   func fooAsync(args: [String]) async throws {
-    KroutonFuture { AuthenticationServiceKt.foo(receiver: self, args: args, onSuccess: $0, onFailure: $1) }.value
+    try await KroutonFuture { AuthenticationServiceKt.foo(receiver: self, args: args, onSuccess: $0, onFailure: $1) }.value
   }
 
   /**

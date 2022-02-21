@@ -434,7 +434,7 @@ class KroutonSwiftClassExtensionGenerator(
                 .throws(true)
                 .addCode(
                     CodeBlock.builder()
-                        .addStatement("KroutonFuture { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
+                        .addStatement("try await KroutonFuture { ${kroutonClassSwiftTypeName}.${functionName}(receiver: self${swiftArgumentList}, onSuccess: $0, onFailure: $1) }.value")
                         .build()
                 )
                 .returns(swiftReturnTypeName)
