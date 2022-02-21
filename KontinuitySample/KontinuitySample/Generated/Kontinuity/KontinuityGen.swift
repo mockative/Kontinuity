@@ -46,6 +46,7 @@ extension AuthenticationService {
    *
    *  Doc string
    *  - Parameter request: Param String
+   *  @return All the flows of type [AuthenticationResponse]
    */
   func getFlows$(request: AuthenticationRequest) -> KroutonPublisher<[shared.AuthenticationResponse], Error> {
     KroutonPublisher { AuthenticationServiceKt.getFlows(receiver: self, request: request, onElement: $0, onSuccess: $1, onFailure: $2) }

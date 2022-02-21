@@ -18,6 +18,7 @@ interface AuthenticationService {
     /**
      * Doc string
      * @param request Param String
+     * @return All the flows of type [AuthenticationResponse]
      */
     fun getFlows(request: AuthenticationRequest): Flow<List<AuthenticationResponse>>
 

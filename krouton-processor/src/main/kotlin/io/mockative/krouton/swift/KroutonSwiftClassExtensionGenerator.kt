@@ -264,7 +264,9 @@ class KroutonSwiftClassExtensionGenerator(
     }
 
     private fun String.toSwiftDocString(): String {
-        return replace(Regex("""@param (\w+) """), "- Parameter $1: ")
+        return this
+//        return replace(Regex("""@param (\w+) """), "- Parameter $1: ")
+//            .replace(Regex("""@return (.+?)(@[a-z]?)""", RegexOption.MULTILINE), "- Returns: $1\n$2")
     }
 
     private fun addAsyncThrowingStreamFunctionExtension(function: KSFunctionDeclaration) {
