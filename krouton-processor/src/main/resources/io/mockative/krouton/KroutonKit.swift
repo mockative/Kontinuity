@@ -1,7 +1,7 @@
 import Foundation
 import Combine
-import $moduleName$
 
+// MARK: SinglePublisher
 public protocol SinglePublisher: Publisher {
     func sink(receiveResult: @escaping (Result<Output, Failure>) -> Void) -> AnyCancellable
 }
@@ -23,10 +23,11 @@ extension SinglePublisher {
     }
 }
 
-extension KotlinThrowable: Error {}
-
 %file:Publisher+Async.swift%
 %file:SinglePublisher+Async.swift%
+// MARK: KroutonSubscription
+public typealias Cancellation = () -> Void
+
 private class KroutonSubscription: Subscription {
     private(set) var isCancelled: Bool = false
 
@@ -48,8 +49,7 @@ private class KroutonSubscription: Subscription {
     }
 }
 
-public typealias Cancellation = () -> Void
-
+// MARK: KroutonPublisher
 public struct KroutonPublisher<Output, Failure: Error> : Publisher {
     public typealias Receiver = (
         @escaping (Output) -> Void,
@@ -75,8 +75,7 @@ public struct KroutonPublisher<Output, Failure: Error> : Publisher {
     }
 }
 
-%file:KontinuityPublisher+Kotlin.swift%
-
+%file:KontinuityPublisher+NSNumber.swift%
 // MARK: KroutonFuture
 public struct KroutonFuture<Output, Failure: Error> : Publisher {
     public typealias Receiver = (
@@ -116,4 +115,4 @@ extension KroutonFuture where Output == Void {
 
 extension KroutonFuture: SinglePublisher {}
 
-%file:KontinuityFuture+Kotlin.swift%
+%file:KontinuityFuture+NSNumber.swift%

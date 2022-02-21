@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -e
+
+SRCROOT="/Users/nicklas/git/krouton/KontinuitySample"
+
+INPUT_DIR="$SRCROOT/../shared/build/generated/ksp/iosMain/resources/krouton"
+
+OUTPUT_DIR="$SRCROOT/KontinuitySample/Generated/Kontinuity"
+OUTPUT_FILE="$OUTPUT_DIR/KontinuityGen.swift"
+
+if [ -f "$OUTPUT_FILE" ]; then
+  rm -rf "$OUTPUT_FILE"
+fi
+
+# shellcheck disable=SC2129
+find "$INPUT_DIR" -type f \(  -name "*.swift" -not -name "KroutonKit.swift" \) -exec cat {} + >> "$OUTPUT_FILE"
+
+echo "" >> "$OUTPUT_FILE"
+echo "extension KotlinThrowable: Error {}" >> "$OUTPUT_FILE"

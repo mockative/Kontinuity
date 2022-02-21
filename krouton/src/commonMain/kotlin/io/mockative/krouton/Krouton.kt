@@ -14,7 +14,7 @@ annotation class Krouton(
      * Name of the resulting Swift/Objective-C module the type annotated with this property is a
      * part of.
      *
-     * The default value is an empty string, which results in using the `krouton.darwin.moduleName`
+     * The default value is an empty string, which results in using the `krouton.swift.moduleName`
      * KSP option, or falling back to `"shared"` if that is not specified.
      */
     val moduleName: String = "",
@@ -25,5 +25,5 @@ annotation class Krouton(
      * The default value is an empty string, which results in the package name of the type being
      * used.
      */
-    val outputPackage: String = ""
+    val outputPackage: String = "",
 )

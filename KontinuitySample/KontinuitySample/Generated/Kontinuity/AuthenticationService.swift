@@ -2,6 +2,8 @@ import Combine
 import Foundation
 import shared
 
+extension KotlinThrowable: Error {}
+
 extension AuthenticationService {
     var isLoggingIn$: KroutonPublisher<Swift.Bool, Error> {
       KroutonPublisher { AuthenticationServiceKt.isLoggingIn(receiver: self, onElement: $0, onSuccess: $1, onFailure: $2) }

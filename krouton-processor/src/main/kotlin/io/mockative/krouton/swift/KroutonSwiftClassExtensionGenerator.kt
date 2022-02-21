@@ -1,5 +1,6 @@
 package io.mockative.krouton.swift
 
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.CodeGenerator
@@ -9,6 +10,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.*
+import io.mockative.krouton.Async
 import io.mockative.krouton.generator.Errors
 import io.mockative.krouton.generator.Logger
 import io.mockative.krouton.generator.isFlow
@@ -20,9 +22,9 @@ import com.google.devtools.ksp.symbol.Modifier as KSPModifier
 class KroutonSwiftClassExtensionGenerator(
     private val codeGenerator: CodeGenerator,
     private val logger: Logger?,
-    private val outputDir: String?,
     private val classDec: KSClassDeclaration,
     private val moduleName: String,
+    private val swiftFlags: SwiftFlags,
 ) {
     private val classTypeParameterResolver: TypeParameterResolver =
         classDec.typeParameters.toTypeParameterResolver()
@@ -60,7 +62,7 @@ class KroutonSwiftClassExtensionGenerator(
         // Write files
         val packageName = outputPackage.ifEmpty { className.packageName }
 
-        if (outputDir == null) {
+        if (swiftFlags.outputDir == null) {
             val dependencies = Dependencies(false, classDec.containingFile!!)
 
             fileSpec.addExtension(extensionSpec.build())
@@ -73,13 +75,23 @@ class KroutonSwiftClassExtensionGenerator(
         }
     }
 
+    private fun KSAnnotated.generateAsyncExtensions(): Boolean {
+        return when (swiftFlags.generateAsyncExtensions) {
+            null -> getAnnotationsByType(Async::class).firstOrNull()?.generate == true
+            true -> getAnnotationsByType(Async::class).firstOrNull()?.generate != false
+            false -> false
+        }
+    }
+
     private fun addFunctionExtension(property: KSPropertyDeclaration) {
         addFlowPropertyExtension(property)
 
         // Async generation is disabled while investigating the best signature for these,
         // since the `AsyncThrowingStream` returning functions will clash with the
         // non-async functions.
-        // addAsyncThrowingStreamPropertyExtension(property)
+        if (property.generateAsyncExtensions()) {
+            addAsyncThrowingStreamPropertyExtension(property)
+        }
     }
 
     private fun addFlowPropertyExtension(property: KSPropertyDeclaration) {
@@ -94,7 +106,7 @@ class KroutonSwiftClassExtensionGenerator(
         logger?.debug("Adding property extension for ${className}.${propertyName}")
 
         val swiftElementTypeName = kotlinElementTypeName.toSwiftTypeName(moduleName)
-        val swiftPropertyTypeName = DeclaredTypeName("Krouton", "KroutonPublisher")
+        val swiftPropertyTypeName = DeclaredTypeName(moduleName, "KroutonPublisher")
             .parameterizedBy(
                 TypeVariableName(swiftElementTypeName.toString()),
                 TypeVariableName("Error")
@@ -131,7 +143,7 @@ class KroutonSwiftClassExtensionGenerator(
         val swiftElementTypeName = kotlinElementTypeName.toSwiftTypeName(moduleName)
         val swiftPropertyTypeName = DeclaredTypeName("Combine", "AsyncThrowingPublisher")
             .parameterizedBy(
-                DeclaredTypeName("Krouton", "KroutonPublisher")
+                DeclaredTypeName(moduleName, "KroutonPublisher")
                     .parameterizedBy(
                         TypeVariableName(swiftElementTypeName.toString()),
                         TypeVariableName("Error")
@@ -141,7 +153,7 @@ class KroutonSwiftClassExtensionGenerator(
         val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
 
         extensionSpec.addProperty(
-            PropertySpec.builder("$propertyName$", swiftPropertyTypeName)
+            PropertySpec.builder("${propertyName}Async", swiftPropertyTypeName)
                 .addAttribute(
                     AttributeSpec.builder("available")
                         .addArguments("macOS 12.0", "iOS 15.0", "tvOS 15.0", "watchOS 8.0", "*")
@@ -168,7 +180,9 @@ class KroutonSwiftClassExtensionGenerator(
                 // Async generation is disabled while investigating the best signature for these,
                 // since the `AsyncThrowingStream` returning functions will clash with the
                 // non-async functions.
-                // addAsyncFunctionExtension(function)
+                if (function.generateAsyncExtensions()) {
+                    addAsyncFunctionExtension(function)
+                }
             }
             else -> {
                 addFlowFunctionExtension(function)
@@ -176,7 +190,9 @@ class KroutonSwiftClassExtensionGenerator(
                 // Async generation is disabled while investigating the best signature for these,
                 // since the `AsyncThrowingStream` returning functions will clash with the
                 // non-async functions.
-                // addAsyncThrowingStreamFunctionExtension(function)
+                if (function.generateAsyncExtensions()) {
+                    addAsyncThrowingStreamFunctionExtension(function)
+                }
             }
         }
     }
@@ -194,7 +210,7 @@ class KroutonSwiftClassExtensionGenerator(
         logger?.debug("Adding Flow function extension for ${className}.${functionName}")
 
         val swiftElementTypeName = kotlinElementTypeName.toSwiftTypeName(moduleName)
-        val swiftPropertyTypeName = DeclaredTypeName("Krouton", "KroutonPublisher")
+        val swiftPropertyTypeName = DeclaredTypeName(moduleName, "KroutonPublisher")
             .parameterizedBy(
                 TypeVariableName(swiftElementTypeName.toString()),
                 TypeVariableName("Error")
@@ -266,7 +282,7 @@ class KroutonSwiftClassExtensionGenerator(
         val swiftElementTypeName = kotlinElementTypeName.toSwiftTypeName(moduleName)
         val swiftPropertyTypeName = DeclaredTypeName("Combine", "AsyncThrowingPublisher")
             .parameterizedBy(
-                DeclaredTypeName("Krouton", "KroutonPublisher")
+                DeclaredTypeName(moduleName, "KroutonPublisher")
                     .parameterizedBy(
                         TypeVariableName(swiftElementTypeName.toString()),
                         TypeVariableName("Error")
@@ -280,7 +296,7 @@ class KroutonSwiftClassExtensionGenerator(
         }
 
         extensionSpec.addFunction(
-            FunctionSpec.builder("$functionName$")
+            FunctionSpec.builder("${functionName}Async")
                 .addTypeVariables(
                     function.typeParameters
                         .map { it.toTypeVariableName(kotlinTypeParameterResolver) }
@@ -323,7 +339,7 @@ class KroutonSwiftClassExtensionGenerator(
         val kotlinReturnType = function.getReturnType()
         val kotlinReturnTypeName = kotlinReturnType.toTypeName(kotlinTypeParameterResolver)
 
-        val swiftReturnTypeName = DeclaredTypeName("Krouton", "KroutonFuture")
+        val swiftReturnTypeName = DeclaredTypeName(moduleName, "KroutonFuture")
             .parameterizedBy(
                 TypeVariableName(kotlinReturnTypeName.toSwiftTypeName(moduleName).toString()),
                 TypeVariableName("Error")
@@ -388,7 +404,7 @@ class KroutonSwiftClassExtensionGenerator(
         val kroutonClassSwiftTypeName = className.simpleNames.joinToString("_") + "Kt"
 
         extensionSpec.addFunction(
-            FunctionSpec.builder("$functionName$")
+            FunctionSpec.builder("${functionName}Async")
                 .addAttribute(
                     AttributeSpec.builder("available")
                         .addArguments("macOS 12.0", "iOS 15.0", "tvOS 15.0", "watchOS 8.0", "*")

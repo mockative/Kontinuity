@@ -6,11 +6,12 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.mockative.krouton.generator.KroutonWriter
 import io.mockative.krouton.generator.Logger
 import io.mockative.krouton.swift.KroutonSwiftGenerator
+import io.mockative.krouton.swift.SwiftFlags
 
 class KroutonSymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
-    options: Map<String, String>
+    private val options: Map<String, String>,
 ) : SymbolProcessor, Logger {
 
     private var processed = false
@@ -18,10 +19,7 @@ class KroutonSymbolProcessor(
     private val isDebugLogEnabled: Boolean = options["krouton.logging"]?.lowercase() == "debug"
     private val isInfoLogEnabled: Boolean = isDebugLogEnabled || options["krouton.logging"]?.lowercase() == "info"
 
-    private val moduleName: String = options["krouton.darwin.moduleName"] ?: "shared"
-    private val swiftOutputDir: String? = options["krouton.swift.outputDir"]
-
-    fun getResourceString(path: String): String {
+    private fun getResourceString(path: String): String {
         return javaClass.classLoader.getResourceAsStream(path)!!
             .use { it.readAllBytes().decodeToString() }
     }
@@ -32,13 +30,13 @@ class KroutonSymbolProcessor(
         // TODO Investigate feasibility of generating Swift files from resulting Kotlin Module header file (e.g. `shared.h`), to deal with potential incremental compilation / cleaning issues.
         // TODO Consider using a top-level package/directory for ease-of-use in Xcode
         // TODO Consider outputting a single file instead of multiple files to improve the developer experience in Xcode
+        // TODO Investigate generating a Swift package
 
         val kroutonKit = getResourceString("io/mockative/krouton/KroutonKit.swift")
-            .replace("\$moduleName\$", moduleName)
             .replace("%file:Publisher+Async.swift%\n", "")
             .replace("%file:SinglePublisher+Async.swift%\n", "")
-            .replace("%file:KontinuityPublisher+Kotlin.swift%", getResourceString("io/mockative/krouton/KontinuityPublisher+Kotlin.swift"))
-            .replace("%file:KontinuityFuture+Kotlin.swift%", getResourceString("io/mockative/krouton/KontinuityFuture+Kotlin.swift"))
+            .replace("%file:KontinuityPublisher+NSNumber.swift%", getResourceString("io/mockative/krouton/KontinuityPublisher+NSNumber.swift"))
+            .replace("%file:KontinuityFuture+NSNumber.swift%", getResourceString("io/mockative/krouton/KontinuityFuture+NSNumber.swift"))
 
         try {
             codeGenerator.createNewFile(Dependencies(true), "krouton", "KroutonKit", "swift")
@@ -50,8 +48,6 @@ class KroutonSymbolProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         debug("Starting")
-
-        addKroutonKitSwift()
 
         if (processed) {
             debug("Skipped: Already Processed")
@@ -66,8 +62,14 @@ class KroutonSymbolProcessor(
 
         debug("Processing")
 
+        addKroutonKitSwift()
+
         val kroutonWriter = KroutonWriter(codeGenerator, this)
-        val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, moduleName, swiftOutputDir)
+
+        val swiftFlags = SwiftFlags.fromOptions(options)
+        SwiftFlags.shared = swiftFlags // TODO Get rid of this static thing
+
+        val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, swiftFlags)
 
         annotatedSymbols
             .mapNotNull { symbol -> symbol as? KSClassDeclaration }
