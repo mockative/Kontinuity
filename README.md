@@ -36,6 +36,8 @@ kotlin {
 }
 
 dependencies {
-    ksp("io.mockative:kontinuity-processor:1.0.0-SNAPSHOT")
+    listOf("kspIos").forEach {
+        add("io.mockative:kontinuity-processor:1.0.0-SNAPSHOT")
+    }
 }
 ```
