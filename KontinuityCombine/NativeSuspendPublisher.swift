@@ -1,4 +1,5 @@
 import Combine
+import KontinuityCore
 
 internal struct NativeSuspendPublisher<Output, Failure: Error, Unit>: Publisher {
     let nativeSuspend: NativeSuspend<Output, Failure, Unit>

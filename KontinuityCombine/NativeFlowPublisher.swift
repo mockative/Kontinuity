@@ -1,4 +1,5 @@
 import Combine
+import KontinuityCore
 
 internal struct NativeFlowPublisher<Output, Failure: Error, Unit>: Publisher {
     let nativeFlow: NativeFlow<Output, Failure, Unit>

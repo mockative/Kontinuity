@@ -1,4 +1,5 @@
 import Combine
+import KontinuityCore
 
 // MARK: Suspend
 public func createFuture<Result, Failure: Error, Unit>(
