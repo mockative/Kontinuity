@@ -38,12 +38,12 @@ kotlin {
     sourceSets {
         val commonTest by getting {
             dependencies {
-                implementation("io.mockative:krouton:$version")
+                implementation("io.mockative:kontinuity:$version")
             }
         }
     }
 }
 
 dependencies {
-    add("kspJvm", "io.mockative:krouton-processor:$version")
+    add("kspJvm", "io.mockative:kontinuity-processor:$version")
 }

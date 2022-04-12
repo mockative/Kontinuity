@@ -1,4 +1,4 @@
-package io.mockative.krouton
+package io.mockative.kontinuity
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher

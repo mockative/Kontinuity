@@ -12,13 +12,12 @@ pluginManagement {
     }
 }
 
-rootProject.name = "krouton"
+rootProject.name = "Kontinuity"
 
 if (startParameter.projectProperties.containsKey("check_publication")) {
     include(":tools:check-publication")
 }
 
 include(":shared")
-include(":krouton")
-include(":krouton-processor")
-include(":krouton-test")
+include(":kontinuity-core")
+include(":kontinuity-processor")

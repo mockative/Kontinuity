@@ -35,7 +35,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
 
-                implementation(project(":krouton"))
+                implementation(project(":kontinuity-core"))
             }
 
             kotlin.srcDir("build/generated/ksp/commonMain/kotlin")
@@ -99,7 +99,7 @@ android {
 }
 
 dependencies {
-    add("kspIos", project(":krouton-processor"))
+    add("kspIos", project(":kontinuity-processor"))
 }
 
 ksp {
