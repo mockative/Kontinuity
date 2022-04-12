@@ -3,8 +3,13 @@ package io.mockative.krouton
 import kotlinx.coroutines.flow.Flow
 import io.mockative.krouton.Krouton
 
+/**
+ * The authentication service
+ */
 @Krouton
-interface AuthenticationService {
+interface AuthenticationService : RefreshableService {
+
+    var unrelatedProperty: String
 
     var isLoggingIn: Flow<Boolean>
 
@@ -21,5 +26,7 @@ interface AuthenticationService {
      * @return All the flows of type [AuthenticationResponse]
      */
     fun getFlows(request: AuthenticationRequest): Flow<List<AuthenticationResponse>>
+
+    suspend fun getFlowsAsync(request: AuthenticationRequest): Flow<List<AuthenticationResponse>>
 
 }

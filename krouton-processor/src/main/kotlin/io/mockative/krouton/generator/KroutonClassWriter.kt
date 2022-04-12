@@ -1,7 +1,5 @@
 package io.mockative.krouton.generator
 
-import com.google.devtools.ksp.getDeclaredFunctions
-import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.*
@@ -31,15 +29,21 @@ class KroutonClassWriter(
         val packageName = className.packageName
         val fileName = className.simpleNames.joinToString(".")
 
-        fileSpec = FileSpec.builder(packageName, fileName)
+        fileSpec = FileSpec.builder(packageName, "${fileName}.Kontinuity")
 
-        // Properties
-        classDec.getDeclaredProperties()
-            .forEach { property -> addKroutonProperty(property) }
+        val nativeClassName = className.toNativeClassName()
+        fileSpec.addType(classDec.buildNativeTypeSpec(nativeClassName))
 
-        // Functions
-        classDec.getDeclaredFunctions()
-            .forEach { function -> addKroutonFunction(function) }
+        val nativeWrapperClassName = className.toNativeWrapperClassName()
+        fileSpec.addType(classDec.buildNativeWrapperTypeSpec(nativeWrapperClassName, nativeClassName))
+
+//        // Properties
+//        classDec.getDeclaredProperties()
+//            .forEach { property -> addKroutonProperty(property) }
+//
+//        // Functions
+//        classDec.getDeclaredFunctions()
+//            .forEach { function -> addKroutonFunction(function) }
 
         fileSpec
             .build()
@@ -70,7 +74,6 @@ class KroutonClassWriter(
             .getFlowElementTypeNameOrNull(property, typeParameterResolver) ?: return
 
         fileSpec
-            .addImport("io.mockative.krouton", "collectFlow")
             .addFunction(
                 FunSpec.builder(propertyName)
                     .addTypeVariables(property.getTypeVariables(typeParameterResolver))

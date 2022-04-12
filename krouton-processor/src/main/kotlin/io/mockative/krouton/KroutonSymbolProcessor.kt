@@ -1,11 +1,12 @@
 package io.mockative.krouton
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.squareup.kotlinpoet.ksp.toClassName
 import io.mockative.krouton.generator.KroutonWriter
 import io.mockative.krouton.generator.Logger
-import io.mockative.krouton.swift.KroutonSwiftGenerator
 import io.mockative.krouton.swift.SwiftFlags
 
 class KroutonSymbolProcessor(
@@ -69,19 +70,21 @@ class KroutonSymbolProcessor(
 
         debug("Processing")
 
-        val swiftFlags = SwiftFlags.fromOptions(options)
-        SwiftFlags.shared = swiftFlags // TODO Get rid of this static thing
-
-        addKroutonKitSwift()
-
+//        val swiftFlags = SwiftFlags.fromOptions(options)
+//        SwiftFlags.shared = swiftFlags // TODO Get rid of this static thing
+//
+//        addKroutonKitSwift()
+//
         val kroutonWriter = KroutonWriter(codeGenerator, this)
-        val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, swiftFlags)
+//        val swiftGenerator = KroutonSwiftGenerator(codeGenerator, this, swiftFlags)
 
         annotatedSymbols
             .mapNotNull { symbol -> symbol as? KSClassDeclaration }
+            .flatMap { symbol -> symbol.getAllSuperTypes().mapNotNull { it.declaration as? KSClassDeclaration } + symbol }
+            .distinctBy { it.toClassName() }
             .forEach { classDec ->
                 kroutonWriter.writeKroutons(classDec)
-                swiftGenerator.addExtensionFile(classDec)
+//                swiftGenerator.addExtensionFile(classDec)
             }
 
         processed = true

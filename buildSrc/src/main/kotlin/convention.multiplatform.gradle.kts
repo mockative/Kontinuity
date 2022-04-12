@@ -41,11 +41,14 @@ kotlin {
         // Common
         val commonMain by getting
 
+        // Non-Darwin
+        val nonDarwinMain by creating { dependsOn(commonMain) }
+
         // JVM
-        val jvmMain by getting
+        val jvmMain by getting { dependsOn(nonDarwinMain) }
 
         // JS
-        val jsMain by getting
+        val jsMain by getting { dependsOn(nonDarwinMain) }
 
         // Native
         val nativeMain by creating { dependsOn(commonMain) }
@@ -83,20 +86,29 @@ kotlin {
         val macosArm64Main by getting { dependsOn(macosMain) }
 
         // Linux
-        val linuxMain by creating { dependsOn(nativeMain) }
+        val linuxMain by creating {
+            dependsOn(nativeMain)
+            dependsOn(nonDarwinMain)
+        }
 
         val linuxArm64Main by getting { dependsOn(linuxMain) }
         val linuxArm32HfpMain by getting { dependsOn(linuxMain) }
         val linuxX64Main by getting { dependsOn(linuxMain) }
 
         // mingw (Windows)
-        val mingwMain by creating { dependsOn(nativeMain) }
+        val mingwMain by creating {
+            dependsOn(nativeMain)
+            dependsOn(nonDarwinMain)
+        }
 
         val mingwX64Main by getting { dependsOn(mingwMain) }
         val mingwX86Main by getting { dependsOn(mingwMain) }
 
         // wasm
-        val wasmMain by creating { dependsOn(commonMain) }
+        val wasmMain by creating {
+            dependsOn(commonMain)
+            dependsOn(nonDarwinMain)
+        }
 
         val wasm32Main by getting { dependsOn(wasmMain) }
     }
