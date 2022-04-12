@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+
 plugins {
     kotlin("multiplatform")
 }
@@ -27,14 +30,14 @@ kotlin {
     macosX64()
     macosArm64()
 
-    linuxArm64()
-    linuxArm32Hfp()
+//    linuxArm64()
+//    linuxArm32Hfp()
     linuxX64()
 
     mingwX64()
-    mingwX86()
+//    mingwX86()
 
-    wasm32()
+//    wasm32()
 
     @Suppress("UNUSED_VARIABLE")
     sourceSets {
@@ -91,8 +94,8 @@ kotlin {
             dependsOn(nonDarwinMain)
         }
 
-        val linuxArm64Main by getting { dependsOn(linuxMain) }
-        val linuxArm32HfpMain by getting { dependsOn(linuxMain) }
+//        val linuxArm64Main by getting { dependsOn(linuxMain) }
+//        val linuxArm32HfpMain by getting { dependsOn(linuxMain) }
         val linuxX64Main by getting { dependsOn(linuxMain) }
 
         // mingw (Windows)
@@ -102,14 +105,20 @@ kotlin {
         }
 
         val mingwX64Main by getting { dependsOn(mingwMain) }
-        val mingwX86Main by getting { dependsOn(mingwMain) }
+//        val mingwX86Main by getting { dependsOn(mingwMain) }
 
         // wasm
-        val wasmMain by creating {
-            dependsOn(commonMain)
-            dependsOn(nonDarwinMain)
-        }
+//        val wasmMain by creating {
+//            dependsOn(commonMain)
+//            dependsOn(nonDarwinMain)
+//        }
+//
+//        val wasm32Main by getting { dependsOn(wasmMain) }
+    }
+}
 
-        val wasm32Main by getting { dependsOn(wasmMain) }
+rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
+    rootProject.extensions.configure<NodeJsRootExtension> {
+        download = false
     }
 }

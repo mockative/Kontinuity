@@ -45,5 +45,5 @@ kotlin {
 }
 
 dependencies {
-    ksp("io.mockative:krouton-processor:$version")
+    add("kspJvm", "io.mockative:krouton-processor:$version")
 }

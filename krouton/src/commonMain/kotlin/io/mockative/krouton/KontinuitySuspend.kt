@@ -20,7 +20,8 @@ typealias KontinuitySuspend<T> = (onResult: KontinuityCallback<T>, onError: Kont
  */
 fun <T> kontinuitySuspend(scope: CoroutineScope? = null, block: suspend () -> T): KontinuitySuspend<T> {
     val coroutineScope = scope ?: defaultCoroutineScope
-    return (collect@{ onResult: KontinuityCallback<T>, onError: KontinuityCallback<KontinuityError> ->
+
+    val suspend: KontinuitySuspend<T> = { onResult, onError ->
         val job = coroutineScope.launch {
             try {
                 onResult(block())
@@ -32,11 +33,15 @@ fun <T> kontinuitySuspend(scope: CoroutineScope? = null, block: suspend () -> T)
                 onError(e.asKontinuityError())
             }
         }
+
         job.invokeOnCompletion { cause ->
             // Only handle CancellationExceptions, all other exceptions should be handled inside the job
             if (cause !is CancellationException) return@invokeOnCompletion
             onError(cause.asKontinuityError())
         }
-        return@collect job.asNativeCancellable()
-    }).freeze()
+
+        job.asNativeCancellable()
+    }
+
+    return suspend.freeze()
 }

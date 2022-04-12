@@ -23,7 +23,8 @@ typealias KontinuityFlow<T> = (onItem: KontinuityCallback<T>, onComplete: Kontin
  */
 fun <T> Flow<T>.toKontinuityFlow(scope: CoroutineScope? = null): KontinuityFlow<T> {
     val coroutineScope = scope ?: defaultCoroutineScope
-    return (collect@{ onItem: KontinuityCallback<T>, onComplete: KontinuityCallback<KontinuityError?> ->
+
+    val flow: KontinuityFlow<T> = { onItem, onComplete ->
         val job = coroutineScope.launch {
             try {
                 collect { onItem(it) }
@@ -36,11 +37,15 @@ fun <T> Flow<T>.toKontinuityFlow(scope: CoroutineScope? = null): KontinuityFlow<
                 onComplete(e.asKontinuityError())
             }
         }
+        
         job.invokeOnCompletion { cause ->
             // Only handle CancellationExceptions, all other exceptions should be handled inside the job
             if (cause !is CancellationException) return@invokeOnCompletion
             onComplete(cause.asKontinuityError())
         }
-        return@collect job.asNativeCancellable()
-    }).freeze()
+
+        job.asNativeCancellable()
+    }
+
+    return flow.freeze()
 }

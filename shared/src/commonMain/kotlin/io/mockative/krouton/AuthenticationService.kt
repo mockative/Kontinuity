@@ -2,6 +2,7 @@ package io.mockative.krouton
 
 import kotlinx.coroutines.flow.Flow
 import io.mockative.krouton.Krouton
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * The authentication service
@@ -11,10 +12,16 @@ interface AuthenticationService : RefreshableService {
 
     var unrelatedProperty: String
 
-    var isLoggingIn: Flow<Boolean>
+    val isLoggingIn: Flow<Boolean>
 
-    var intFlow: Flow<Int>
-    var doubleFlow: Flow<Double>
+    val intFlow: Flow<Int>
+    val doubleFlow: Flow<Double>
+
+    val stateFlow: StateFlow<String?>
+
+    // KMRoutines
+    // Kallback
+    //
 
     suspend fun login(request: AuthenticationRequest?): AuthenticationResponse
 

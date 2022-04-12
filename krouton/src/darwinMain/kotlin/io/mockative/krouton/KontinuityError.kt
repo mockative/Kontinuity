@@ -1,7 +1,20 @@
 package io.mockative.krouton
 
-import platform.Foundation.NSException
+import kotlinx.cinterop.UnsafeNumber
+import platform.Foundation.NSError
+import platform.Foundation.NSLocalizedDescriptionKey
 
-actual typealias KontinuityError = NSException
+actual typealias KontinuityError = NSError
 
-internal actual fun Throwable.asKontinuityError(): KontinuityError = ThrowableNSException(this)
+@OptIn(UnsafeNumber::class)
+internal actual fun Throwable.asKontinuityError(): KontinuityError {
+    val userInfo = mutableMapOf<Any?, Any>()
+    userInfo["KotlinException"] = this.freeze()
+
+    val message = message
+    if (message != null) {
+        userInfo[NSLocalizedDescriptionKey] = message
+    }
+
+    return NSError.errorWithDomain("KotlinException", 0, userInfo)
+}

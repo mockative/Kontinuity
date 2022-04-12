@@ -14,10 +14,14 @@ fun KSClassDeclaration.buildNativeWrapperTypeSpec(
 ): TypeSpec {
     val typeParameterResolver = typeParameters.toTypeParameterResolver()
 
+    val wrappedPropertySpec = buildWrappedPropertySpec()
+
     return TypeSpec.classBuilder(className)
+        .addModifiers(KModifier.OPEN)
         .addSuperinterface(superinterface)
-        .primaryConstructor(buildConstructorSpec())
-        .addProperty(buildWrappedPropertySpec())
+        .addProperty(wrappedPropertySpec)
+        .addFunction(buildEmptyConstructorSpec())
+        .addFunction(buildWrappedConstructorSpec(wrappedPropertySpec))
         .addProperties(buildNativePropertySpecs(typeParameterResolver))
         .addFunctions(buildNativeFunSpecs(typeParameterResolver))
         .addKdoc(docString?.trim() ?: "")
@@ -25,14 +29,24 @@ fun KSClassDeclaration.buildNativeWrapperTypeSpec(
 }
 
 private fun KSClassDeclaration.buildWrappedPropertySpec() =
-    PropertySpec.builder("wrapped", toClassName(), KModifier.PRIVATE)
-        .initializer("wrapped")
+    PropertySpec.builder("wrapped", toClassName(), KModifier.PRIVATE, KModifier.LATEINIT)
+        .mutable(true)
         .build()
 
-private fun KSClassDeclaration.buildConstructorSpec() =
-    FunSpec.constructorBuilder()
-        .addParameter("wrapped", toClassName())
+private fun KSClassDeclaration.buildWrappedConstructorSpec(propertySpec: PropertySpec): FunSpec {
+    val parameter = ParameterSpec.builder("wrapping", toClassName())
         .build()
+
+    return FunSpec.constructorBuilder()
+        .addParameter(parameter)
+        .addStatement("%N = %N", propertySpec, parameter)
+        .build()
+}
+
+private fun KSClassDeclaration.buildEmptyConstructorSpec(): FunSpec {
+    return FunSpec.constructorBuilder()
+        .build()
+}
 
 private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypeParameterResolver): List<FunSpec> {
     return getAllFunctions()
@@ -43,9 +57,11 @@ private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypePa
 
 private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: TypeParameterResolver): FunSpec {
     val name = simpleName.asString()
-    val functionType = getFunctionType(typeParameterResolver)
 
-    val builder = FunSpec.builder(name)
+    val functionType = getFunctionType(typeParameterResolver)
+    val nativeName = getNativeName(functionType)
+
+    val builder = FunSpec.builder(nativeName)
         .addModifiers(KModifier.OVERRIDE)
         .addTypeVariables(typeParameters.map { it.toTypeVariableName(typeParameterResolver) })
         .addParameters(parameters.map {
@@ -70,17 +86,28 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
                 .returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
                 .addStatement("return wrapped.$name($arguments).%M()", TO_KONTINUITY_FLOW_FUNCTION)
                 .build()
+            is ReturnType.StateFlow -> builder
+                .returns(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
+                .addStatement("return wrapped.$name($arguments).%M()", TO_KONTINUITY_STATE_FLOW_FUNCTION)
+                .build()
+            else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
         is FunctionType.Suspending -> when (val returnType = functionType.returnType) {
             is ReturnType.Value -> builder
                 .returns(KONTINUITY_SUSPEND.parameterizedBy(returnType.type))
-                .addStatement("return %M { wrapped.$name($arguments) }", KONTINUITY_SUSPEND_FUNCTION)
+                .addStatement("return %M·{ wrapped.$name($arguments) }", KONTINUITY_SUSPEND_FUNCTION)
                 .build()
             is ReturnType.Flow -> builder
                 .returns(KONTINUITY_SUSPEND.parameterizedBy(KONTINUITY_FLOW.parameterizedBy(returnType.elementType)))
-                .addStatement("return %M { wrapped.$name($arguments).%M() }", KONTINUITY_SUSPEND_FUNCTION, TO_KONTINUITY_FLOW_FUNCTION)
+                .addStatement("return %M·{ wrapped.$name($arguments).%M() }", KONTINUITY_SUSPEND_FUNCTION, TO_KONTINUITY_FLOW_FUNCTION)
                 .build()
+            is ReturnType.StateFlow -> builder
+                .returns(KONTINUITY_SUSPEND.parameterizedBy(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType)))
+                .addStatement("return %M·{ wrapped.$name($arguments).%M() }", KONTINUITY_SUSPEND_FUNCTION, TO_KONTINUITY_STATE_FLOW_FUNCTION)
+                .build()
+            else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
+        else -> throw IllegalStateException("Unknown function type ${functionType::class}")
     }
 }
 
@@ -92,16 +119,15 @@ private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: T
 }
 
 private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver: TypeParameterResolver): PropertySpec {
-    val name = simpleName.asString()
+    val returnType = type.getReturnType(typeParameterResolver)
+    val name = getNativeName(returnType)
+    val modifiers = listOf(KModifier.OVERRIDE)
 
-    val propertyDecType = type.toTypeName(typeParameterResolver)
-    val elementType = propertyDecType.getFlowElementTypeNameOrNull()
-
-    val modifiers = modifiers.mapNotNull { it.toKModifier() } + KModifier.OVERRIDE
-
-    return when (elementType) {
-        null -> buildNonFlowNativePropertySpec(name, propertyDecType, modifiers)
-        else -> buildFlowNativePropertySpec(name, elementType, modifiers)
+    return when (returnType) {
+        is ReturnType.Value -> buildNonFlowNativePropertySpec(name, returnType.type, modifiers)
+        is ReturnType.Flow -> buildFlowNativePropertySpec(name, returnType.elementType, modifiers)
+        is ReturnType.StateFlow -> buildStateFlowNativePropertySpec(name, returnType.elementType, modifiers)
+        else -> throw IllegalStateException("Unknown return type ${returnType::class}")
     }
 }
 
@@ -134,6 +160,18 @@ private fun KSPropertyDeclaration.buildFlowNativePropertySpec(
     .getter(
         FunSpec.getterBuilder()
             .addStatement("return wrapped.${simpleName.asString()}.%M()", TO_KONTINUITY_FLOW_FUNCTION)
+            .build()
+    )
+    .build()
+
+private fun KSPropertyDeclaration.buildStateFlowNativePropertySpec(
+    name: String,
+    elementType: TypeName,
+    modifiers: List<KModifier>
+) = PropertySpec.builder(name, KONTINUITY_STATE_FLOW.parameterizedBy(elementType), modifiers)
+    .getter(
+        FunSpec.getterBuilder()
+            .addStatement("return wrapped.${simpleName.asString()}.%M()", TO_KONTINUITY_STATE_FLOW_FUNCTION)
             .build()
     )
     .build()

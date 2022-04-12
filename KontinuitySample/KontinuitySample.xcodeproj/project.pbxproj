@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35C2071E27C366D600C5C5A4 /* KontinuityGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C2071D27C366D600C5C5A4 /* KontinuityGen.swift */; };
 		35D89EDD27BF6FEA00CD90C8 /* KontinuitySampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EDC27BF6FEA00CD90C8 /* KontinuitySampleApp.swift */; };
 		35D89EDF27BF6FEA00CD90C8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EDE27BF6FEA00CD90C8 /* ContentView.swift */; };
 		35D89EE127BF6FEC00CD90C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35D89EE027BF6FEC00CD90C8 /* Assets.xcassets */; };
@@ -36,7 +35,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		35C2071D27C366D600C5C5A4 /* KontinuityGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KontinuityGen.swift; sourceTree = "<group>"; };
 		35D89ED927BF6FEA00CD90C8 /* KontinuitySample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KontinuitySample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		35D89EDC27BF6FEA00CD90C8 /* KontinuitySampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KontinuitySampleApp.swift; sourceTree = "<group>"; };
 		35D89EDE27BF6FEA00CD90C8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -143,7 +141,6 @@
 		35D89F0827BF756600CD90C8 /* Kontinuity */ = {
 			isa = PBXGroup;
 			children = (
-				35C2071D27C366D600C5C5A4 /* KontinuityGen.swift */,
 				35D89F0A27BF756600CD90C8 /* KroutonKit.swift */,
 			);
 			path = Kontinuity;
@@ -302,7 +299,6 @@
 			files = (
 				35D89F0C27BF756600CD90C8 /* KroutonKit.swift in Sources */,
 				35D89EDF27BF6FEA00CD90C8 /* ContentView.swift in Sources */,
-				35C2071E27C366D600C5C5A4 /* KontinuityGen.swift in Sources */,
 				35D89EDD27BF6FEA00CD90C8 /* KontinuitySampleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -4,10 +4,7 @@ import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isPublic
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
@@ -17,6 +14,26 @@ fun ClassName.toNativeClassName(): ClassName =
 
 fun ClassName.toNativeWrapperClassName(): ClassName =
     ClassName(packageName, simpleNames.dropLast(1) + "Native${simpleNames.last()}Wrapper")
+
+fun KSPropertyDeclaration.getNativeName(type: ReturnType): String {
+    return when (type) {
+        is ReturnType.Value -> simpleName.asString()
+        is ReturnType.Flow, is ReturnType.StateFlow -> "${simpleName.asString()}Native"
+        else -> throw IllegalStateException("Unknown return type ${type::class}")
+    }
+}
+
+fun KSFunctionDeclaration.getNativeName(type: FunctionType): String {
+    return when (type) {
+        is FunctionType.Blocking -> when (type.returnType) {
+            is ReturnType.Value -> simpleName.asString()
+            is ReturnType.Flow, is ReturnType.StateFlow -> "${simpleName.asString()}Native"
+            else -> throw IllegalStateException("Unknown return type ${type.returnType::class}")
+        }
+        is FunctionType.Suspending -> "${simpleName.asString()}Native"
+        else -> throw IllegalStateException("Unknown function type ${type::class}")
+    }
+}
 
 fun KSClassDeclaration.buildNativeTypeSpec(className: ClassName): TypeSpec {
     val typeParameterResolver = typeParameters.toTypeParameterResolver()
@@ -40,7 +57,7 @@ private fun KSClassDeclaration.buildNativeSuperinterfaces(): List<ClassName> {
 sealed interface ReturnType {
     data class Value(val type: TypeName) : ReturnType
     data class Flow(val elementType: TypeName) : ReturnType
-//    data class StateFlow(val elementType: TypeName) : ReturnType()
+    data class StateFlow(val elementType: TypeName) : ReturnType
 }
 
 sealed interface FunctionType {
@@ -48,10 +65,25 @@ sealed interface FunctionType {
     data class Suspending(val returnType: ReturnType) : FunctionType
 }
 
+internal fun KSTypeReference.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
+    val typeName = toTypeName(typeParameterResolver)
+
+    if (typeName is ParameterizedTypeName) {
+        when (typeName.rawType) {
+            STATE_FLOW -> {
+                return ReturnType.StateFlow(typeName.typeArguments[0])
+            }
+            FLOW, SHARED_FLOW -> {
+                return ReturnType.Flow(typeName.typeArguments[0])
+            }
+        }
+    }
+
+    return ReturnType.Value(typeName)
+}
+
 internal fun KSFunctionDeclaration.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
-    val funDecReturnType = returnType!!.toTypeName(typeParameterResolver)
-    val elementType = funDecReturnType.getFlowElementTypeNameOrNull()
-    return elementType?.let { ReturnType.Flow(it) } ?: ReturnType.Value(funDecReturnType)
+    return returnType!!.getReturnType(typeParameterResolver)
 }
 
 internal fun KSFunctionDeclaration.getFunctionType(typeParameterResolver: TypeParameterResolver): FunctionType {
@@ -71,8 +103,8 @@ private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypePa
 }
 
 private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: TypeParameterResolver): FunSpec {
-    val name = simpleName.asString()
     val functionType = getFunctionType(typeParameterResolver)
+    val name = getNativeName(functionType)
 
     val builder = FunSpec.builder(name)
         .addModifiers(KModifier.ABSTRACT)
@@ -87,24 +119,29 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
                 .build()
         })
 
-    return when (functionType) {
+    when (functionType) {
         is FunctionType.Blocking -> when (val returnType = functionType.returnType) {
-            is ReturnType.Value -> builder
-                .returns(returnType.type)
-                .build()
-            is ReturnType.Flow -> builder
-                .returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
-                .build()
+            is ReturnType.Value ->
+                builder.returns(returnType.type)
+            is ReturnType.Flow ->
+                builder.returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
+            is ReturnType.StateFlow ->
+                builder.returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
+            else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
         is FunctionType.Suspending -> when (val returnType = functionType.returnType) {
-            is ReturnType.Value -> builder
-                .returns(KONTINUITY_SUSPEND.parameterizedBy(returnType.type))
-                .build()
-            is ReturnType.Flow -> builder
-                .returns(KONTINUITY_SUSPEND.parameterizedBy(KONTINUITY_FLOW.parameterizedBy(returnType.elementType)))
-                .build()
+            is ReturnType.Value ->
+                builder.returns(KONTINUITY_SUSPEND.parameterizedBy(returnType.type))
+            is ReturnType.Flow ->
+                builder.returns(KONTINUITY_SUSPEND.parameterizedBy(KONTINUITY_FLOW.parameterizedBy(returnType.elementType)))
+            is ReturnType.StateFlow ->
+                builder.returns(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
+            else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
+        else -> throw IllegalStateException("Unknown function type ${functionType::class}")
     }
+
+    return builder.build()
 }
 
 private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: TypeParameterResolver): List<PropertySpec> {
@@ -115,31 +152,19 @@ private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: T
 }
 
 private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver: TypeParameterResolver): PropertySpec {
-    val name = simpleName.asString()
-
-    val propertyDecType = type.toTypeName(typeParameterResolver)
-    val elementType = propertyDecType.getFlowElementTypeNameOrNull()
-
-    val modifiers = modifiers.mapNotNull { it.toKModifier() }
-
-    return when (elementType) {
-        null -> PropertySpec.builder(name, propertyDecType, modifiers)
+    val returnType = type.getReturnType(typeParameterResolver)
+    val name = getNativeName(returnType)
+    return when (returnType) {
+        is ReturnType.Value -> PropertySpec.builder(name, returnType.type)
             .mutable(isMutable)
             .build()
 
-        else -> PropertySpec.builder(name, KONTINUITY_FLOW.parameterizedBy(elementType), modifiers)
+        is ReturnType.Flow -> PropertySpec.builder(name, KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
             .build()
-    }
-}
 
-fun TypeName.getFlowElementTypeNameOrNull(): TypeName? {
-    if (this !is ParameterizedTypeName) {
-        return null
-    }
+        is ReturnType.StateFlow -> PropertySpec.builder(name, KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
+            .build()
 
-    if (!rawType.isFlow) {
-        return null
+        else -> throw IllegalStateException("Unknown return type ${returnType::class}")
     }
-
-    return typeArguments[0]
 }

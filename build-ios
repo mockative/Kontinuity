@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+WORKING_DIR=$(pwd)
+
+export CONFIGURATION="debug"
+export SDK_NAME="iphoneos123"
+export ARCHS="arm64"
+export TARGET_BUILD_DIR="$WORKING_DIR/build/xcode-frameworks"
+export FRAMEWORKS_FOLDER_PATH="shared"
+export EXPANDED_CODE_SIGN_IDENTITY="-"
+
+./gradlew :shared:embedAndSignAppleFrameworkForXcode --no-build-cache
