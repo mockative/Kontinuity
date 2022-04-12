@@ -5,64 +5,10 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
-import io.mockative.krouton.Kontinuity
-
-fun KSClassDeclaration.toNativeInterfaceClassName(): ClassName {
-    val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
-        ?.interfaceName
-        ?.ifEmpty { null }
-        ?: Options.Generator.interfaceName
-
-    return toNativeFormattedClassName(format)
-}
-
-fun KSClassDeclaration.toNativeWrapperClassName(): ClassName {
-    val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
-        ?.wrapperClassName
-        ?.ifEmpty { null }
-        ?: Options.Generator.wrapperClassName
-
-    return toNativeFormattedClassName(format)
-}
-
-fun KSClassDeclaration.toNativeFormattedClassName(format: String): ClassName {
-    val className = toClassName()
-    val prefixes = className.simpleNames.dropLast(1)
-    val formattedClassName = format.format(className.simpleNames.last())
-    return ClassName(className.packageName, prefixes + formattedClassName)
-}
-
-fun KSPropertyDeclaration.getNativeName(type: ReturnType): String {
-    return when (type) {
-        is ReturnType.Value ->
-            simpleName.asString()
-
-        is ReturnType.Flow, is ReturnType.StateFlow -> {
-            val memberName = Options.Generator.getMemberName(simpleName.asString())
-            memberName.format(simpleName.asString())
-        }
-
-        else -> throw IllegalStateException("Unknown return type ${type::class}")
-    }
-}
-
-fun KSFunctionDeclaration.getNativeName(type: FunctionType): String {
-    return when (type) {
-        is FunctionType.Blocking -> when (type.returnType) {
-            is ReturnType.Value ->
-                simpleName.asString()
-
-            is ReturnType.Flow, is ReturnType.StateFlow ->
-                Options.Generator.getMemberName(simpleName.asString())
-
-            else -> throw IllegalStateException("Unknown return type ${type.returnType::class}")
-        }
-
-        is FunctionType.Suspending -> Options.Generator.getMemberName(simpleName.asString())
-
-        else -> throw IllegalStateException("Unknown function type ${type::class}")
-    }
-}
+import io.mockative.krouton.FunctionType
+import io.mockative.krouton.ReturnType
+import io.mockative.krouton.getFunctionType
+import io.mockative.krouton.getReturnType
 
 fun KSClassDeclaration.buildNativeTypeSpec(className: ClassName): TypeSpec {
     val typeParameterResolver = typeParameters.toTypeParameterResolver()
@@ -79,47 +25,6 @@ private fun KSClassDeclaration.buildNativeSuperinterfaces(): List<ClassName> {
     return getAllSuperTypes()
         .mapNotNull { (it.declaration as? KSClassDeclaration)?.toNativeInterfaceClassName() }
         .toList()
-}
-
-sealed interface ReturnType {
-    data class Value(val type: TypeName) : ReturnType
-    data class Flow(val elementType: TypeName) : ReturnType
-    data class StateFlow(val elementType: TypeName) : ReturnType
-}
-
-sealed interface FunctionType {
-    data class Blocking(val returnType: ReturnType) : FunctionType
-    data class Suspending(val returnType: ReturnType) : FunctionType
-}
-
-internal fun KSTypeReference.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
-    val typeName = toTypeName(typeParameterResolver)
-
-    if (typeName is ParameterizedTypeName) {
-        when (typeName.rawType) {
-            STATE_FLOW -> {
-                return ReturnType.StateFlow(typeName.typeArguments[0])
-            }
-            FLOW, SHARED_FLOW -> {
-                return ReturnType.Flow(typeName.typeArguments[0])
-            }
-        }
-    }
-
-    return ReturnType.Value(typeName)
-}
-
-internal fun KSFunctionDeclaration.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
-    return returnType!!.getReturnType(typeParameterResolver)
-}
-
-internal fun KSFunctionDeclaration.getFunctionType(typeParameterResolver: TypeParameterResolver): FunctionType {
-    val returnType = getReturnType(typeParameterResolver)
-
-    return when {
-        modifiers.contains(Modifier.SUSPEND) -> FunctionType.Suspending(returnType)
-        else -> FunctionType.Blocking(returnType)
-    }
 }
 
 private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypeParameterResolver): List<FunSpec> {

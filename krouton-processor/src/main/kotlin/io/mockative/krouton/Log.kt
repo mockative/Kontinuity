@@ -1,4 +1,4 @@
-package io.mockative.krouton.generator
+package io.mockative.krouton
 
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSNode

@@ -1,4 +1,4 @@
-package io.mockative.krouton.generator
+package io.mockative.krouton
 
 import java.util.*
 
