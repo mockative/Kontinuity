@@ -60,12 +60,12 @@ kotlin {
         }
 
         val iosMain by getting {
-            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
+//            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
         }
         val iosTest by getting {
-            languageSettings {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-            }
+//            languageSettings {
+//                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+//            }
         }
 
         val jsMain by getting
