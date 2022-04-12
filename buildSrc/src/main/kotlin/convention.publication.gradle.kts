@@ -59,14 +59,14 @@ publishing {
             artifact(javadocJar.get())
 
             pom {
-                name.set("Mockative")
-                description.set("Mocking framework for Kotlin, Kotlin/Native and Kotlin Multiplatform")
-                url.set("http://mockative.io")
+                name.set("Kontinuity")
+                description.set("Effortless use `suspend` and `Flow<T>` in non-JVM Kotlin Multiplatform targets.")
+                url.set("http://mockative.io/kontinuity")
 
                 licenses {
                     license {
                         name.set("MIT")
-                        url.set("https://github.com/mockative/mockative/LICENSE")
+                        url.set("https://github.com/mockative/kontinuity/LICENSE")
                     }
                 }
 
@@ -79,7 +79,7 @@ publishing {
                 }
 
                 scm {
-                    url.set("https://github.com/mockative/mockative")
+                    url.set("https://github.com/mockative/kontinuity")
                 }
             }
         }
