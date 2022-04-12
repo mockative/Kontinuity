@@ -58,7 +58,7 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
             is ReturnType.Flow ->
                 builder.returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
             is ReturnType.StateFlow ->
-                builder.returns(KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
+                builder.returns(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
         is FunctionType.Suspending -> when (val returnType = functionType.returnType) {
@@ -67,13 +67,15 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
             is ReturnType.Flow ->
                 builder.returns(
                     KONTINUITY_SUSPEND.parameterizedBy(
-                        KONTINUITY_FLOW.parameterizedBy(
-                            returnType.elementType
-                        )
+                        KONTINUITY_FLOW.parameterizedBy(returnType.elementType)
                     )
                 )
             is ReturnType.StateFlow ->
-                builder.returns(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
+                builder.returns(
+                    KONTINUITY_SUSPEND.parameterizedBy(
+                        KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType)
+                    )
+                )
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
         else -> throw IllegalStateException("Unknown function type ${functionType::class}")
@@ -97,17 +99,19 @@ private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver:
             .mutable(isMutable)
             .build()
 
-        is ReturnType.Flow -> PropertySpec.builder(
-            name,
-            KONTINUITY_FLOW.parameterizedBy(returnType.elementType)
-        )
-            .build()
+        is ReturnType.Flow -> {
+            val propertyType = KONTINUITY_FLOW.parameterizedBy(returnType.elementType)
 
-        is ReturnType.StateFlow -> PropertySpec.builder(
-            name,
-            KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType)
-        )
-            .build()
+            PropertySpec.builder(name, propertyType)
+                .build()
+        }
+
+        is ReturnType.StateFlow -> {
+            val propertyType = KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType)
+
+            PropertySpec.builder(name, propertyType)
+                .build()
+        }
 
         else -> throw IllegalStateException("Unknown return type ${returnType::class}")
     }

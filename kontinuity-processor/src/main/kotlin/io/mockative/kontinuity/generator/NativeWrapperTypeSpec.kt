@@ -92,7 +92,7 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
                 .implementsSuspend(returnType.type, name, arguments)
                 .build()
             is ReturnType.Flow -> builder
-                .implementsSuspendStateFlow(returnType.elementType, name, arguments)
+                .implementsSuspendFlow(returnType.elementType, name, arguments)
                 .build()
             is ReturnType.StateFlow -> builder
                 .implementsSuspendStateFlow(returnType.elementType, name, arguments)
