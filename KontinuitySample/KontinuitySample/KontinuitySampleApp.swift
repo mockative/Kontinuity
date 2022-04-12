@@ -2,7 +2,7 @@ import SwiftUI
 import shared
 
 func foo(authenticationService: NativeAuthenticationService) async throws {
-    createPublisher(for: authenticationService.doubleFlowNative)
+    createPublisher(for: authenticationService.getFlowsNative(request: AuthenticationRequest(code: "abc")))
         .sink { completion in
             // Nothing
         } receiveValue: { value in

@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		35A85BE628057A7C00915368 /* NativeSuspendPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BE528057A7C00915368 /* NativeSuspendPublisher.swift */; };
+		35A85BEA28057B3900915368 /* NativeCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BE928057B3900915368 /* NativeCallback.swift */; };
+		35A85BEC28057B4300915368 /* NativeCancellable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BEB28057B4300915368 /* NativeCancellable.swift */; };
+		35A85BEE28057B5000915368 /* NativeSuspend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BED28057B5000915368 /* NativeSuspend.swift */; };
+		35A85BF028057B6200915368 /* NativeFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BEF28057B6200915368 /* NativeFlow.swift */; };
+		35A85BF228057B7A00915368 /* NativeStateFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BF128057B7A00915368 /* NativeStateFlow.swift */; };
+		35A85BF628057C4700915368 /* NativeFlowPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BF528057C4700915368 /* NativeFlowPublisher.swift */; };
+		35A85BF828057C8300915368 /* Combine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A85BF728057C8300915368 /* Combine.swift */; };
 		35D89EDD27BF6FEA00CD90C8 /* KontinuitySampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EDC27BF6FEA00CD90C8 /* KontinuitySampleApp.swift */; };
 		35D89EDF27BF6FEA00CD90C8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EDE27BF6FEA00CD90C8 /* ContentView.swift */; };
 		35D89EE127BF6FEC00CD90C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35D89EE027BF6FEC00CD90C8 /* Assets.xcassets */; };
@@ -14,7 +22,7 @@
 		35D89EEE27BF6FEC00CD90C8 /* KontinuitySampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EED27BF6FEC00CD90C8 /* KontinuitySampleTests.swift */; };
 		35D89EF827BF6FEC00CD90C8 /* KontinuitySampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EF727BF6FEC00CD90C8 /* KontinuitySampleUITests.swift */; };
 		35D89EFA27BF6FEC00CD90C8 /* KontinuitySampleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89EF927BF6FEC00CD90C8 /* KontinuitySampleUITestsLaunchTests.swift */; };
-		35D89F0C27BF756600CD90C8 /* KroutonKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89F0A27BF756600CD90C8 /* KroutonKit.swift */; };
+		35D89F0C27BF756600CD90C8 /* NativeStateFlowPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D89F0A27BF756600CD90C8 /* NativeStateFlowPublisher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +43,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		35A85BE528057A7C00915368 /* NativeSuspendPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSuspendPublisher.swift; sourceTree = "<group>"; };
+		35A85BE928057B3900915368 /* NativeCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCallback.swift; sourceTree = "<group>"; };
+		35A85BEB28057B4300915368 /* NativeCancellable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCancellable.swift; sourceTree = "<group>"; };
+		35A85BED28057B5000915368 /* NativeSuspend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSuspend.swift; sourceTree = "<group>"; };
+		35A85BEF28057B6200915368 /* NativeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFlow.swift; sourceTree = "<group>"; };
+		35A85BF128057B7A00915368 /* NativeStateFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeStateFlow.swift; sourceTree = "<group>"; };
+		35A85BF528057C4700915368 /* NativeFlowPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFlowPublisher.swift; sourceTree = "<group>"; };
+		35A85BF728057C8300915368 /* Combine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combine.swift; sourceTree = "<group>"; };
 		35D89ED927BF6FEA00CD90C8 /* KontinuitySample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KontinuitySample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		35D89EDC27BF6FEA00CD90C8 /* KontinuitySampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KontinuitySampleApp.swift; sourceTree = "<group>"; };
 		35D89EDE27BF6FEA00CD90C8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -45,7 +61,7 @@
 		35D89EF327BF6FEC00CD90C8 /* KontinuitySampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KontinuitySampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		35D89EF727BF6FEC00CD90C8 /* KontinuitySampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KontinuitySampleUITests.swift; sourceTree = "<group>"; };
 		35D89EF927BF6FEC00CD90C8 /* KontinuitySampleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KontinuitySampleUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		35D89F0A27BF756600CD90C8 /* KroutonKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KroutonKit.swift; sourceTree = "<group>"; };
+		35D89F0A27BF756600CD90C8 /* NativeStateFlowPublisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NativeStateFlowPublisher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +89,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		35A85BF928057D3700915368 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				35A85BE928057B3900915368 /* NativeCallback.swift */,
+				35A85BEB28057B4300915368 /* NativeCancellable.swift */,
+				35A85BEF28057B6200915368 /* NativeFlow.swift */,
+				35A85BF128057B7A00915368 /* NativeStateFlow.swift */,
+				35A85BED28057B5000915368 /* NativeSuspend.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		35A85BFA28057D3B00915368 /* Combine */ = {
+			isa = PBXGroup;
+			children = (
+				35A85BF728057C8300915368 /* Combine.swift */,
+				35A85BF528057C4700915368 /* NativeFlowPublisher.swift */,
+				35D89F0A27BF756600CD90C8 /* NativeStateFlowPublisher.swift */,
+				35A85BE528057A7C00915368 /* NativeSuspendPublisher.swift */,
+			);
+			path = Combine;
+			sourceTree = "<group>";
+		};
 		35D89ED027BF6FEA00CD90C8 = {
 			isa = PBXGroup;
 			children = (
@@ -96,7 +135,7 @@
 		35D89EDB27BF6FEA00CD90C8 /* KontinuitySample */ = {
 			isa = PBXGroup;
 			children = (
-				35D89F0727BF756600CD90C8 /* Generated */,
+				35D89F0827BF756600CD90C8 /* Kontinuity */,
 				35D89EDC27BF6FEA00CD90C8 /* KontinuitySampleApp.swift */,
 				35D89EDE27BF6FEA00CD90C8 /* ContentView.swift */,
 				35D89EE027BF6FEC00CD90C8 /* Assets.xcassets */,
@@ -130,18 +169,11 @@
 			path = KontinuitySampleUITests;
 			sourceTree = "<group>";
 		};
-		35D89F0727BF756600CD90C8 /* Generated */ = {
-			isa = PBXGroup;
-			children = (
-				35D89F0827BF756600CD90C8 /* Kontinuity */,
-			);
-			path = Generated;
-			sourceTree = "<group>";
-		};
 		35D89F0827BF756600CD90C8 /* Kontinuity */ = {
 			isa = PBXGroup;
 			children = (
-				35D89F0A27BF756600CD90C8 /* KroutonKit.swift */,
+				35A85BFA28057D3B00915368 /* Combine */,
+				35A85BF928057D3700915368 /* Core */,
 			);
 			path = Kontinuity;
 			sourceTree = "<group>";
@@ -297,9 +329,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35D89F0C27BF756600CD90C8 /* KroutonKit.swift in Sources */,
+				35D89F0C27BF756600CD90C8 /* NativeStateFlowPublisher.swift in Sources */,
 				35D89EDF27BF6FEA00CD90C8 /* ContentView.swift in Sources */,
 				35D89EDD27BF6FEA00CD90C8 /* KontinuitySampleApp.swift in Sources */,
+				35A85BEC28057B4300915368 /* NativeCancellable.swift in Sources */,
+				35A85BF628057C4700915368 /* NativeFlowPublisher.swift in Sources */,
+				35A85BEA28057B3900915368 /* NativeCallback.swift in Sources */,
+				35A85BE628057A7C00915368 /* NativeSuspendPublisher.swift in Sources */,
+				35A85BF028057B6200915368 /* NativeFlow.swift in Sources */,
+				35A85BF228057B7A00915368 /* NativeStateFlow.swift in Sources */,
+				35A85BF828057C8300915368 /* Combine.swift in Sources */,
+				35A85BEE28057B5000915368 /* NativeSuspend.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
