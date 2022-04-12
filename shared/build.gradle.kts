@@ -103,8 +103,11 @@ dependencies {
 }
 
 ksp {
-    arg("krouton.logging", "debug")
-    arg("krouton.swift.intType", "Swift.Int")
-    arg("krouton.swift.longType", "Swift.Int")
-    arg("krouton.swift.generateAsyncExtensions", "true")
+    arg("kontinuity.logging.level", "info")
+
+    if (System.getenv("XCODE_VERSION_ACTUAL") != null) {
+        arg("kontinuity.generator.interfaceName", "Native%s")
+        arg("kontinuity.generator.wrapperClassName", "Native%sWrapper")
+    }
+//    arg("kontinuity.generator.memberName", "kontinuity%s")
 }

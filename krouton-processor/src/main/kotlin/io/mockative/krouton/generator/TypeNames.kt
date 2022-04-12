@@ -5,11 +5,11 @@ import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.UNIT
 
+const val KONTINUITY_ANNOTATION = "io.mockative.krouton.Kontinuity"
+
 val FLOW = ClassName("kotlinx.coroutines.flow", "Flow")
 val STATE_FLOW = ClassName("kotlinx.coroutines.flow", "StateFlow")
 val SHARED_FLOW = ClassName("kotlinx.coroutines.flow", "SharedFlow")
-
-val CANCELLATION = LambdaTypeName.get(returnType = UNIT)
 
 val KONTINUITY_SUSPEND = ClassName("io.mockative.krouton", "KontinuitySuspend")
 val KONTINUITY_FLOW = ClassName("io.mockative.krouton", "KontinuityFlow")

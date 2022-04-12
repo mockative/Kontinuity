@@ -1,24 +1,47 @@
 package io.mockative.krouton.generator
 
-import com.google.devtools.ksp.getAllSuperTypes
-import com.google.devtools.ksp.getDeclaredFunctions
-import com.google.devtools.ksp.getDeclaredProperties
-import com.google.devtools.ksp.isPublic
+import com.google.devtools.ksp.*
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
+import io.mockative.krouton.Kontinuity
 
-fun ClassName.toNativeClassName(): ClassName =
-    ClassName(packageName, simpleNames.dropLast(1) + "Native${simpleNames.last()}")
+fun KSClassDeclaration.toNativeInterfaceClassName(): ClassName {
+    val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
+        ?.interfaceName
+        ?.ifEmpty { null }
+        ?: Options.Generator.interfaceName
 
-fun ClassName.toNativeWrapperClassName(): ClassName =
-    ClassName(packageName, simpleNames.dropLast(1) + "Native${simpleNames.last()}Wrapper")
+    return toNativeFormattedClassName(format)
+}
+
+fun KSClassDeclaration.toNativeWrapperClassName(): ClassName {
+    val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
+        ?.wrapperClassName
+        ?.ifEmpty { null }
+        ?: Options.Generator.wrapperClassName
+
+    return toNativeFormattedClassName(format)
+}
+
+fun KSClassDeclaration.toNativeFormattedClassName(format: String): ClassName {
+    val className = toClassName()
+    val prefixes = className.simpleNames.dropLast(1)
+    val formattedClassName = format.format(className.simpleNames.last())
+    return ClassName(className.packageName, prefixes + formattedClassName)
+}
 
 fun KSPropertyDeclaration.getNativeName(type: ReturnType): String {
     return when (type) {
-        is ReturnType.Value -> simpleName.asString()
-        is ReturnType.Flow, is ReturnType.StateFlow -> "${simpleName.asString()}Native"
+        is ReturnType.Value ->
+            simpleName.asString()
+
+        is ReturnType.Flow, is ReturnType.StateFlow -> {
+            val memberName = Options.Generator.getMemberName(simpleName.asString())
+            memberName.format(simpleName.asString())
+        }
+
         else -> throw IllegalStateException("Unknown return type ${type::class}")
     }
 }
@@ -26,11 +49,17 @@ fun KSPropertyDeclaration.getNativeName(type: ReturnType): String {
 fun KSFunctionDeclaration.getNativeName(type: FunctionType): String {
     return when (type) {
         is FunctionType.Blocking -> when (type.returnType) {
-            is ReturnType.Value -> simpleName.asString()
-            is ReturnType.Flow, is ReturnType.StateFlow -> "${simpleName.asString()}Native"
+            is ReturnType.Value ->
+                simpleName.asString()
+
+            is ReturnType.Flow, is ReturnType.StateFlow ->
+                Options.Generator.getMemberName(simpleName.asString())
+
             else -> throw IllegalStateException("Unknown return type ${type.returnType::class}")
         }
-        is FunctionType.Suspending -> "${simpleName.asString()}Native"
+
+        is FunctionType.Suspending -> Options.Generator.getMemberName(simpleName.asString())
+
         else -> throw IllegalStateException("Unknown function type ${type::class}")
     }
 }
@@ -48,9 +77,7 @@ fun KSClassDeclaration.buildNativeTypeSpec(className: ClassName): TypeSpec {
 
 private fun KSClassDeclaration.buildNativeSuperinterfaces(): List<ClassName> {
     return getAllSuperTypes()
-        .mapNotNull { (it.declaration as? KSClassDeclaration) }
-        .map { it.toClassName() }
-        .map { it.toNativeClassName() }
+        .mapNotNull { (it.declaration as? KSClassDeclaration)?.toNativeInterfaceClassName() }
         .toList()
 }
 
@@ -133,7 +160,13 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
             is ReturnType.Value ->
                 builder.returns(KONTINUITY_SUSPEND.parameterizedBy(returnType.type))
             is ReturnType.Flow ->
-                builder.returns(KONTINUITY_SUSPEND.parameterizedBy(KONTINUITY_FLOW.parameterizedBy(returnType.elementType)))
+                builder.returns(
+                    KONTINUITY_SUSPEND.parameterizedBy(
+                        KONTINUITY_FLOW.parameterizedBy(
+                            returnType.elementType
+                        )
+                    )
+                )
             is ReturnType.StateFlow ->
                 builder.returns(KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
@@ -159,10 +192,16 @@ private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver:
             .mutable(isMutable)
             .build()
 
-        is ReturnType.Flow -> PropertySpec.builder(name, KONTINUITY_FLOW.parameterizedBy(returnType.elementType))
+        is ReturnType.Flow -> PropertySpec.builder(
+            name,
+            KONTINUITY_FLOW.parameterizedBy(returnType.elementType)
+        )
             .build()
 
-        is ReturnType.StateFlow -> PropertySpec.builder(name, KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType))
+        is ReturnType.StateFlow -> PropertySpec.builder(
+            name,
+            KONTINUITY_STATE_FLOW.parameterizedBy(returnType.elementType)
+        )
             .build()
 
         else -> throw IllegalStateException("Unknown return type ${returnType::class}")

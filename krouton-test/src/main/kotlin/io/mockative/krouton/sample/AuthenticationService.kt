@@ -1,9 +1,9 @@
 package io.mockative.krouton.sample
 
-import io.mockative.krouton.Krouton
+import io.mockative.krouton.Kontinuity
 import kotlinx.coroutines.flow.Flow
 
-@Krouton
+@Kontinuity
 interface AuthenticationService {
 
     var isLoggingIn: Flow<Boolean?>
