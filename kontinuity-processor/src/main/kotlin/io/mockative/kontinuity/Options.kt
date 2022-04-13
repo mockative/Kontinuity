@@ -10,24 +10,30 @@ object Options {
     }
 
     object Generator {
-        // Native%s
-        val interfaceName = source["kontinuity.generator.interfaceName"] ?: "Kontinuity%s"
+        // K%s
+        val interfaceName = source["kontinuity.generator.interfaceName"] ?: "K%s"
 
-        // Native%sWrapper
-        val wrapperClassName = source["kontinuity.generator.wrapperClassName"] ?: "Kontinuity%sWrapper"
+        // K%sWrapper
+        val wrapperClassName = source["kontinuity.generator.wrapperClassName"] ?: "K%sWrapper"
 
-        // %sNative
-        val memberName = source["kontinuity.generator.memberName"] ?: "%sNative"
+        // %K
+        val transformedMemberName = source["kontinuity.generator.transformedMemberName"] ?: "%sK"
 
-        fun getMemberName(name: String): String {
-            val member = if (memberName.endsWith("%s")) {
-                name.replaceFirstChar { it.titlecase(Locale.getDefault()) }
-            } else {
-                name
-            }
+        fun getTransformedMemberName(member: String): String =
+            transformedMemberName.getMemberName(member)
 
-            return memberName.format(member)
-        }
+        // %s
+        val simpleMemberName = source["kontinuity.generator.simpleMemberName"] ?: "%s"
+
+        fun getSimpleMemberName(member: String): String =
+            simpleMemberName.getMemberName(member)
+
+        private fun String.getMemberName(name: String): String =
+            format(when {
+                this == "%s" -> name
+                endsWith("%s") -> replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                else -> name
+            })
     }
 
     override fun toString(): String {
@@ -35,7 +41,8 @@ object Options {
             |kontinuity.logging.level: "${Logging.level}"
             |kontinuity.generator.interfaceName: "${Generator.interfaceName}"
             |kontinuity.generator.wrapperClassName: "${Generator.wrapperClassName}"
-            |kontinuity.generator.memberName: "${Generator.memberName}"
+            |kontinuity.generator.transformedMemberName: "${Generator.transformedMemberName}"
+            |kontinuity.generator.simpleMemberName: "${Generator.simpleMemberName}"
         """.trimMargin()
     }
 }
