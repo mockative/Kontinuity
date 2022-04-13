@@ -200,7 +200,8 @@ private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver:
     val returnType = type.getReturnType(typeParameterResolver)
 //    val name = getNativeName(returnType)
     val name = simpleName.asString()
-    val modifiers = listOf(KModifier.OVERRIDE)
+//    val modifiers = listOf(KModifier.OVERRIDE)
+    val modifiers = emptyList<KModifier>()
 
     return when (returnType) {
         is ReturnType.Value ->
