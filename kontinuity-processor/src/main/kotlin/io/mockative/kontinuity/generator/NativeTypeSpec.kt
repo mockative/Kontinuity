@@ -76,7 +76,7 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
     return builder.build()
 }
 
-internal fun KSTypeAlias.toClassName(): ClassName {
+internal fun KSDeclaration.toClassName(): ClassName {
     require(!isLocal()) {
         "Local/anonymous classes are not supported!"
     }

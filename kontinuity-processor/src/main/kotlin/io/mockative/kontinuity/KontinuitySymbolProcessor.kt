@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.ksp.toClassName
 import io.mockative.kontinuity.generator.KontinuityWriter
+import kotlin.time.measureTime
 
 class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
 
@@ -20,40 +21,44 @@ class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : Symb
             return emptyList()
         }
 
-        Log.info("Starting with options:\n$Options")
+        val duration = measureTime {
+            Log.info("Starting with options:\n$Options")
 
-        val annotatedSymbols = resolver.getSymbolsWithAnnotation(KONTINUITY_ANNOTATION).toList()
-        if (annotatedSymbols.isEmpty()) {
-            Log.debug("Skipped: No annotated types found 12")
-            return emptyList()
-        }
-
-        val declarationsToGenerate = annotatedSymbols
-            .mapNotNull { symbol -> symbol as? KSClassDeclaration }
-            .flatMap { symbol ->
-                symbol.getAllSuperTypes()
-                    .mapNotNull { it.declaration as? KSClassDeclaration } + symbol
+            val annotatedSymbols = resolver.getSymbolsWithAnnotation(KONTINUITY_ANNOTATION).toList()
+            if (annotatedSymbols.isEmpty()) {
+                Log.debug("Skipped: No annotated types found 12")
+                return emptyList()
             }
-            .distinctBy { it.toClassName() }
 
-        Log.info("Processing ${declarationsToGenerate.size} types from ${annotatedSymbols.size} annotated types")
+            val declarationsToGenerate = annotatedSymbols
+                .mapNotNull { symbol -> symbol as? KSClassDeclaration }
+                .flatMap { symbol ->
+                    symbol.getAllSuperTypes()
+                        .mapNotNull { it.declaration as? KSClassDeclaration } + symbol
+                }
+                .distinctBy { it.toClassName() }
 
-        val kontinuityWriter = KontinuityWriter()
+            Log.info("Processing ${declarationsToGenerate.size} types from ${annotatedSymbols.size} annotated types")
 
-        declarationsToGenerate
-            .forEach { classDec ->
-                val className = classDec.toClassName()
+            val kontinuityWriter = KontinuityWriter()
 
-                if (classDec.isAnnotationPresent(Kontinuity::class)) {
-                    Log.debug("Processing annotated type $className")
-                } else {
-                    Log.debug("Processing inherited type $className")
+            declarationsToGenerate
+                .forEach { classDec ->
+                    val className = classDec.toClassName()
+
+                    if (classDec.isAnnotationPresent(Kontinuity::class)) {
+                        Log.debug("Processing annotated type $className")
+                    } else {
+                        Log.debug("Processing inherited type $className")
+                    }
+
+                    kontinuityWriter.writeClassKontinuity(codeGenerator, classDec)
                 }
 
-                kontinuityWriter.writeClassKontinuity(codeGenerator, classDec)
-            }
+            processed = true
+        }
 
-        processed = true
+        Log.info("Processing finished after $duration")
 
         return emptyList()
     }

@@ -12,17 +12,13 @@ import io.mockative.kontinuity.*
 import io.mockative.kontinuity.getFunctionType
 import io.mockative.kontinuity.getReturnType
 
-fun KSClassDeclaration.buildNativeWrapperTypeSpec(
-    className: ClassName,
-    superinterface: ClassName
-): TypeSpec {
+fun KSClassDeclaration.buildNativeWrapperTypeSpec(className: ClassName): TypeSpec {
     val typeParameterResolver = typeParameters.toTypeParameterResolver()
 
     val wrappedPropertySpec = buildWrappedPropertySpec()
 
     return TypeSpec.classBuilder(className)
         .addModifiers(KModifier.OPEN)
-        .addSuperinterface(superinterface)
         .addProperty(wrappedPropertySpec)
         .addFunction(buildEmptyConstructorSpec())
         .addFunction(buildWrappedConstructorSpec(wrappedPropertySpec))
@@ -59,14 +55,21 @@ private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypePa
         .toList()
 }
 
+private fun KSFunctionDeclaration.getModifiers(): List<KModifier> =
+    when {
+        isFromAny() -> listOf(KModifier.OVERRIDE)
+        else -> emptyList()
+    }
+
 private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: TypeParameterResolver): FunSpec {
     val name = simpleName.asString()
 
     val functionType = getFunctionType(typeParameterResolver)
     val nativeName = getNativeName(functionType)
+    val modifiers = getModifiers()
 
     val builder = FunSpec.builder(nativeName)
-        .addModifiers(KModifier.OVERRIDE)
+        .addModifiers(modifiers)
         .addTypeVariables(buildNativeTypeParameterSpecs(typeParameterResolver))
         .addParameters(buildNativeParameterSpecs(typeParameterResolver))
 

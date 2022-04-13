@@ -9,13 +9,14 @@ import com.squareup.kotlinpoet.ksp.*
 class KontinuityWriter {
     fun writeClassKontinuity(codeGenerator: CodeGenerator, classDec: KSClassDeclaration) {
         val nativeClassName = classDec.toNativeInterfaceClassName()
-        val nativeWrapperClassName = classDec.toNativeWrapperClassName()
+//        val nativeWrapperClassName = classDec.toNativeWrapperClassName()
 
         val fileName = classDec.containingFile!!.fileName.removeSuffix(".kt") + ".Kontinuity"
 
         val fileSpec = FileSpec.builder(classDec.packageName.asString(), fileName)
-            .addType(classDec.buildNativeTypeSpec(nativeClassName))
-            .addType(classDec.buildNativeWrapperTypeSpec(nativeWrapperClassName, nativeClassName))
+//            .addType(classDec.buildNativeTypeSpec(nativeClassName))
+//            .addType(classDec.buildNativeWrapperTypeSpec(nativeWrapperClassName))
+            .addType(classDec.buildNativeWrapperTypeSpec(nativeClassName))
             .build()
 
         fileSpec.writeTo(codeGenerator, Dependencies(true, classDec.containingFile!!))

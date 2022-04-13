@@ -6,6 +6,7 @@ import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.UNIT
 
 val KOTLIN_THROWS = ClassName("kotlin", "Throws")
+val KOTLIN_ANY = ClassName("kotlin", "Any")
 
 const val KONTINUITY_ANNOTATION = "io.mockative.kontinuity.Kontinuity"
 
