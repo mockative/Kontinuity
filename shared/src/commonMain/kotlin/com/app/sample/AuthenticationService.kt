@@ -1,5 +1,6 @@
-package io.mockative.kontinuity
+package com.app.sample
 
+import io.mockative.kontinuity.Kontinuity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 

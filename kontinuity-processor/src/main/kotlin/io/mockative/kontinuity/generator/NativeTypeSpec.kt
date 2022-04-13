@@ -88,7 +88,7 @@ internal fun KSDeclaration.toClassName(): ClassName {
     return ClassName(pkgName, simpleNames)
 }
 
-private fun KSFunctionDeclaration.buildNativeThrowsAnnotationSpecs() =
+internal fun KSFunctionDeclaration.buildNativeThrowsAnnotationSpecs() =
     annotations
         .filter { it.shortName.asString() == KOTLIN_THROWS.simpleName }
         .filter { it.annotationType.resolve().toClassName() == KOTLIN_THROWS }

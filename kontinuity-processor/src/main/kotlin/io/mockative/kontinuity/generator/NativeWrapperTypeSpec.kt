@@ -72,6 +72,7 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
         .addModifiers(modifiers)
         .addTypeVariables(buildNativeTypeParameterSpecs(typeParameterResolver))
         .addParameters(buildNativeParameterSpecs(typeParameterResolver))
+        .addAnnotations(buildNativeThrowsAnnotationSpecs())
 
     val arguments = parameters.joinToString(", ") { parameter -> parameter.name!!.asString() }
 
