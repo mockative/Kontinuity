@@ -8,8 +8,7 @@ import com.google.devtools.ksp.symbol.KSValueParameter
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
-import io.mockative.kontinuity.FunctionType
-import io.mockative.kontinuity.ReturnType
+import io.mockative.kontinuity.*
 import io.mockative.kontinuity.getFunctionType
 import io.mockative.kontinuity.getReturnType
 

@@ -6,9 +6,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeName
-import io.mockative.kontinuity.generator.FLOW
-import io.mockative.kontinuity.generator.SHARED_FLOW
-import io.mockative.kontinuity.generator.STATE_FLOW
 
 sealed interface ReturnType {
     data class Value(val type: TypeName) : ReturnType

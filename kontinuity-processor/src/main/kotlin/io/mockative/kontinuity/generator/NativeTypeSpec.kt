@@ -5,8 +5,7 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
-import io.mockative.kontinuity.FunctionType
-import io.mockative.kontinuity.ReturnType
+import io.mockative.kontinuity.*
 import io.mockative.kontinuity.getFunctionType
 import io.mockative.kontinuity.getReturnType
 
@@ -40,16 +39,9 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
 
     val builder = FunSpec.builder(name)
         .addModifiers(KModifier.ABSTRACT)
-        .addTypeVariables(typeParameters.map { it.toTypeVariableName(typeParameterResolver) })
-        .addParameters(parameters.map {
-            ParameterSpec
-                .builder(
-                    it.name!!.asString(),
-                    it.type.toTypeName(typeParameterResolver),
-                    it.modifiers
-                )
-                .build()
-        })
+        .addTypeVariables(buildNativeTypeParameterSpecs(typeParameterResolver))
+        .addParameters(buildNativeParameterSpecs(typeParameterResolver))
+        .addAnnotations(buildNativeThrowsAnnotationSpecs())
 
     when (functionType) {
         is FunctionType.Blocking -> when (val returnType = functionType.returnType) {
@@ -83,6 +75,53 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
 
     return builder.build()
 }
+
+internal fun KSTypeAlias.toClassName(): ClassName {
+    require(!isLocal()) {
+        "Local/anonymous classes are not supported!"
+    }
+    val pkgName = packageName.asString()
+    val typesString = checkNotNull(qualifiedName).asString().removePrefix("$pkgName.")
+
+    val simpleNames = typesString
+        .split(".")
+    return ClassName(pkgName, simpleNames)
+}
+
+private fun KSFunctionDeclaration.buildNativeThrowsAnnotationSpecs() =
+    annotations
+        .filter { it.shortName.asString() == KOTLIN_THROWS.simpleName }
+        .filter { it.annotationType.resolve().toClassName() == KOTLIN_THROWS }
+        .mapNotNull { it.arguments.firstOrNull()?.value as? List<*> }
+        .map { value -> value.filterIsInstance<KSType>() }
+        .map { types -> types.mapNotNull { it.toClassName() } }
+        .map { classNames -> buildNativeThrowsAnnotationSpec(classNames) }
+        .toList()
+
+private fun buildNativeThrowsAnnotationSpec(classNames: List<ClassName>) =
+    AnnotationSpec.builder(KOTLIN_THROWS)
+        .addMember("%T", *classNames.toTypedArray())
+        .build()
+
+private fun KSType.toClassName() =
+    when (val declaration = declaration) {
+        is KSClassDeclaration -> declaration.toClassName()
+        is KSTypeAlias -> declaration.toClassName()
+        else -> null
+    }
+
+private fun KSFunctionDeclaration.buildNativeTypeParameterSpecs(
+    typeParameterResolver: TypeParameterResolver
+) = typeParameters.map { it.toTypeVariableName(typeParameterResolver) }
+
+private fun KSFunctionDeclaration.buildNativeParameterSpecs(
+    typeParameterResolver: TypeParameterResolver
+) = parameters.map { it.buildNativeParameterSpec(typeParameterResolver) }
+
+private fun KSValueParameter.buildNativeParameterSpec(
+    typeParameterResolver: TypeParameterResolver
+) = ParameterSpec.builder(name!!.asString(), type.toTypeName(typeParameterResolver), modifiers)
+    .build()
 
 private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: TypeParameterResolver): List<PropertySpec> {
     return getDeclaredProperties()

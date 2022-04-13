@@ -1,9 +1,11 @@
-package io.mockative.kontinuity.generator
+package io.mockative.kontinuity
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.UNIT
+
+val KOTLIN_THROWS = ClassName("kotlin", "Throws")
 
 const val KONTINUITY_ANNOTATION = "io.mockative.kontinuity.Kontinuity"
 

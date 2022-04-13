@@ -8,7 +8,6 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.ksp.toClassName
-import io.mockative.kontinuity.generator.KONTINUITY_ANNOTATION
 import io.mockative.kontinuity.generator.KontinuityWriter
 
 class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
