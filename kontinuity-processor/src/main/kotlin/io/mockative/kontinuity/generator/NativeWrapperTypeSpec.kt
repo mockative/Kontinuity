@@ -65,10 +65,10 @@ private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: Type
     val name = simpleName.asString()
 
     val functionType = getFunctionType(typeParameterResolver)
-    val nativeName = getNativeName(functionType)
+//    val nativeName = getNativeName(functionType)
     val modifiers = getModifiers()
 
-    val builder = FunSpec.builder(nativeName)
+    val builder = FunSpec.builder(name)
         .addModifiers(modifiers)
         .addTypeVariables(buildNativeTypeParameterSpecs(typeParameterResolver))
         .addParameters(buildNativeParameterSpecs(typeParameterResolver))
@@ -198,7 +198,8 @@ private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: T
 
 private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver: TypeParameterResolver): PropertySpec {
     val returnType = type.getReturnType(typeParameterResolver)
-    val name = getNativeName(returnType)
+//    val name = getNativeName(returnType)
+    val name = simpleName.asString()
     val modifiers = listOf(KModifier.OVERRIDE)
 
     return when (returnType) {
