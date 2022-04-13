@@ -100,7 +100,7 @@ internal fun KSFunctionDeclaration.buildNativeThrowsAnnotationSpecs() =
 
 private fun buildNativeThrowsAnnotationSpec(classNames: List<ClassName>) =
     AnnotationSpec.builder(KOTLIN_THROWS)
-        .addMember("%T", *classNames.toTypedArray())
+        .addMember(classNames.joinToString(", ") { "%T::class" }, *classNames.toTypedArray())
         .build()
 
 private fun KSType.toClassName() =
