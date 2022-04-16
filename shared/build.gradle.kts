@@ -19,7 +19,7 @@ kotlin {
     val iosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
         System.getenv("SDK_NAME")?.startsWith("iphoneos") == true -> ::iosArm64
         System.getenv("NATIVE_ARCH")?.startsWith("arm") == true -> ::iosSimulatorArm64
-        else -> ::iosX64
+        else -> ::iosSimulatorArm64
     }
 
     iosTarget("ios") {
@@ -33,9 +33,15 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                // KotlinX
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
 
+                // Kontinuity
                 implementation(project(":kontinuity-core"))
+
+                // Koin
+                implementation("io.insert-koin:koin-core:3.1.6")
+                implementation(project(":kontinuity-koin"))
             }
 
             kotlin.srcDir("build/generated/ksp/commonMain/kotlin")
@@ -60,7 +66,7 @@ kotlin {
         }
 
         val iosMain by getting {
-//            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
+            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
         }
         val iosTest by getting {
 //            languageSettings {
@@ -100,14 +106,15 @@ android {
 
 dependencies {
     add("kspIos", project(":kontinuity-processor"))
+    add("kspIos", project(":kontinuity-koin-processor"))
 }
 
 ksp {
     arg("kontinuity.logging.level", "info")
 
-    if (System.getenv("XCODE_VERSION_ACTUAL") != null) {
-        arg("kontinuity.generator.interfaceName", "Native%s")
-        arg("kontinuity.generator.wrapperClassName", "Native%sWrapper")
-    }
+//    if (System.getenv("XCODE_VERSION_ACTUAL") != null) {
+//        arg("kontinuity.generator.interfaceName", "Native%s")
+//        arg("kontinuity.generator.wrapperClassName", "Native%sWrapper")
+//    }
 //    arg("kontinuity.generator.memberName", "kontinuity%s")
 }
