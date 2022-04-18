@@ -14,7 +14,7 @@ class KoinTest {
     fun testModule() {
         val module = module {
             factory<OtherService> { DefaultOtherService() }
-            factory { createKontinuityWrapper(OtherService::class) }
+            factory { createKontinuityWrapper(get<OtherService>()) }
         }
 
         val app = koinApplication {

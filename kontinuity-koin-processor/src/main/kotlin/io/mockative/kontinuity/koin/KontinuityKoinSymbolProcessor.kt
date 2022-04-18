@@ -45,21 +45,41 @@ class KontinuityKoinSymbolProcessor : SymbolProcessor {
 
                 val originatingKSFiles = classDec.getAllDependentFiles()
 
+//                FileSpec.builder(packageName, fileName)
+//                    .addFunction(
+//                        FunSpec.builder("createKontinuityWrapper")
+//                            .receiver(KOIN_SCOPE)
+//                            .addParameter(
+//                                ParameterSpec.builder("type", KCLASS.parameterizedBy(className))
+//                                    .addAnnotation(
+//                                        AnnotationSpec.builder(SUPPRESS_ANNOTATION)
+//                                            .addMember("%S", "UNUSED_PARAMETER")
+//                                            .build()
+//                                    )
+//                                    .build()
+//                            )
+//                            .returns(wrapperClassName)
+//                            .addStatement("return %T(get())", wrapperClassName)
+//                            .build()
+//                    )
+//                    .build()
+//                    .writeTo(codeGenerator, false, originatingKSFiles)
+
+                val parameterSpec = ParameterSpec.builder("wrapping", className)
+                    .addAnnotation(
+                        AnnotationSpec.builder(SUPPRESS_ANNOTATION)
+                            .addMember("%S", "UNUSED_PARAMETER")
+                            .build()
+                    )
+                    .build()
                 FileSpec.builder(packageName, fileName)
                     .addFunction(
                         FunSpec.builder("createKontinuityWrapper")
-                            .receiver(KOIN_SCOPE)
                             .addParameter(
-                                ParameterSpec.builder("type", KCLASS.parameterizedBy(className))
-                                    .addAnnotation(
-                                        AnnotationSpec.builder(SUPPRESS_ANNOTATION)
-                                            .addMember("%S", "UNUSED_PARAMETER")
-                                            .build()
-                                    )
-                                    .build()
+                                parameterSpec
                             )
                             .returns(wrapperClassName)
-                            .addStatement("return %T(get())", wrapperClassName)
+                            .addStatement("return %T(%N)", wrapperClassName, parameterSpec)
                             .build()
                     )
                     .build()

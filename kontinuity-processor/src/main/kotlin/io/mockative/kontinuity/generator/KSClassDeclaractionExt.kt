@@ -9,7 +9,7 @@ import io.mockative.kontinuity.Options
 
 fun KSClassDeclaration.toNativeInterfaceClassName(): ClassName {
     val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
-        ?.interfaceName
+        ?.name
         ?.ifEmpty { null }
         ?: Options.Generator.interfaceName
 
@@ -18,7 +18,7 @@ fun KSClassDeclaration.toNativeInterfaceClassName(): ClassName {
 
 fun KSClassDeclaration.toNativeWrapperClassName(): ClassName {
     val format = getAnnotationsByType(Kontinuity::class).firstOrNull()
-        ?.wrapperClassName
+        ?.name
         ?.ifEmpty { null }
         ?: Options.Generator.wrapperClassName
 
