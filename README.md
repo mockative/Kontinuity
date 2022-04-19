@@ -43,6 +43,7 @@ dependencies {
 ```
 
 ```kotlin
+// Source (Kotlin)
 @Kontinuity
 interface TaskService {
     val tasks: StateFlow<Task>
@@ -52,6 +53,7 @@ interface TaskService {
 ```
 
 ```kotlin
+// Generated (Kotlin)
 open class KTaskService(val wrapped: TaskService) {
     val tasksK: KontinuityStateFlow<Task>
         get() = wrapped.toKontinuityStateFlow()
@@ -62,6 +64,7 @@ open class KTaskService(val wrapped: TaskService) {
 ```
 
 ```swift
+// Source (Swift)
 struct TaskListView: View {
     @Environment(\.taskService) private var taskService: KTaskService
     
