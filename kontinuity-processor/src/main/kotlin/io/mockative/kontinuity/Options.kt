@@ -11,7 +11,7 @@ object Options {
 
     object Generator {
         // K%s
-        val wrapperName = source["kontinuity.generator.wrapperName"] ?: "K%T"
+        val className = source["kontinuity.generator.className"] ?: "K%T"
 
         // %K
         val transformedMemberName = source["kontinuity.generator.transformedMemberName"] ?: "%sK"
@@ -36,7 +36,7 @@ object Options {
     override fun toString(): String {
         return """
             |kontinuity.logging.level: "${Logging.level}"
-            |kontinuity.generator.wrapperName: "${Generator.wrapperName}"
+            |kontinuity.generator.className: "${Generator.className}"
             |kontinuity.generator.transformedMemberName: "${Generator.transformedMemberName}"
             |kontinuity.generator.simpleMemberName: "${Generator.simpleMemberName}"
         """.trimMargin()

@@ -1,7 +1,9 @@
 package io.mockative.kontinuity
 
 import com.google.devtools.ksp.getAllSuperTypes
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.PlatformInfo
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
@@ -45,7 +47,9 @@ private fun KSClassDeclaration.getAllSuperTypesContainingFiles() =
         .mapNotNull { type -> type.declaration as? KSClassDeclaration }
         .mapNotNull { classDec -> classDec.containingFile }
 
-class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
+class KontinuitySymbolProcessor(
+    private val codeGenerator: CodeGenerator
+) : SymbolProcessor {
 
     private var processed = false
 
@@ -58,8 +62,16 @@ class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : Symb
         val duration = measureTime {
             Log.info("Starting with options:\n$Options")
 
+            val configurationClass = resolver.getSymbolsWithAnnotation(KONTINUITY_CONFIGURATION_ANNOTATION.canonicalName)
+                .map { dec -> dec as KSClassDeclaration }
+                .singleOrNull()
+
+            Configuration.source = configurationClass
+                ?.getAnnotationsByType(KontinuityConfiguration::class)
+                ?.single()
+
             val annotatedTypes = resolver.getSymbolsWithAnnotation(KONTINUITY_ANNOTATION.canonicalName)
-                .mapNotNull { classDec -> classDec as? KSClassDeclaration }
+                .mapNotNull { dec -> dec as? KSClassDeclaration }
                 .toList()
 
             if (annotatedTypes.isEmpty()) {
@@ -70,19 +82,8 @@ class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : Symb
             annotatedTypes
                 .groupBy { classDec -> classDec.getContainingFile() }
                 .forEach { (sourceFile, classDecs) ->
-                    val wrapperFile = sourceFile.getWrapperFile()
-                    val dependentFiles = classDecs.getAllDependentFiles()
-
-                    FileSpec.builder(sourceFile.packageName, wrapperFile.fileName)
-                        .addWrapperTypes(classDecs)
-                        .build()
-                        .writeTo(codeGenerator, false, dependentFiles)
-
-                    FileSpec.builder("io.mockative.kontinuity", "${sourceFile.packageName}.${sourceFile.fileName}.Kontinuity")
-                        .addGetKontinuityWrapperClassFunctions(classDecs)
-                        .addCreateKontinuityWrapperFunctions(classDecs)
-                        .build()
-                        .writeTo(codeGenerator, false, listOf(sourceFile.file))
+                    codeGenerator.addWrapperFile(sourceFile, classDecs)
+                    codeGenerator.addFunctionsFile(sourceFile, classDecs)
                 }
 
             processed = true
@@ -92,6 +93,30 @@ class KontinuitySymbolProcessor(private val codeGenerator: CodeGenerator) : Symb
 
         return emptyList()
     }
+}
+
+internal fun CodeGenerator.addWrapperFile(sourceFile: SourceFile, classDecs: List<KSClassDeclaration>) {
+    val wrapperFile = sourceFile.getWrapperFile()
+    val dependentFiles = classDecs.getAllDependentFiles()
+
+    val packageName = sourceFile.packageName
+    val fileName = wrapperFile.fileName
+
+    FileSpec.builder(packageName, fileName)
+        .addWrapperTypes(classDecs)
+        .build()
+        .writeTo(this, false, dependentFiles)
+}
+
+internal fun CodeGenerator.addFunctionsFile(sourceFile: SourceFile, classDecs: List<KSClassDeclaration>) {
+    val packageName = "io.mockative.kontinuity"
+    val fileName = "${sourceFile.packageName}.${sourceFile.fileName}.Kontinuity"
+
+    FileSpec.builder(packageName, fileName)
+        .addGetKontinuityWrapperClassFunctions(classDecs)
+        .addCreateKontinuityWrapperFunctions(classDecs)
+        .build()
+        .writeTo(this, false, listOf(sourceFile.file))
 }
 
 internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunctions(classDecs: List<KSClassDeclaration>): FileSpec.Builder {

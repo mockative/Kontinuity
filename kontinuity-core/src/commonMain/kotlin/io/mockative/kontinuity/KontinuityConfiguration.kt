@@ -4,7 +4,6 @@ package io.mockative.kontinuity
 @Retention(AnnotationRetention.SOURCE)
 annotation class KontinuityConfiguration(
     val className: String = "",
-    val memberName: String = "",
-    val functionName: String = "",
-    val propertyName: String = ""
+//    val transformedMemberName: String = "",
+//    val simpleMemberName: String = "",
 )

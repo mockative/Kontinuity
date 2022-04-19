@@ -1,15 +1,13 @@
 package io.mockative.kontinuity
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.LambdaTypeName
-import com.squareup.kotlinpoet.MemberName
-import com.squareup.kotlinpoet.UNIT
+import com.squareup.kotlinpoet.*
 
 val KOTLIN_THROWS = ClassName("kotlin", "Throws")
 val KOTLIN_ANY = ClassName("kotlin", "Any")
 val KCLASS = ClassName("kotlin.reflect", "KClass")
 
-val KONTINUITY_ANNOTATION = ClassName("io.mockative.kontinuity", "Kontinuity")
+val KONTINUITY_ANNOTATION = Kontinuity::class.asClassName()
+val KONTINUITY_CONFIGURATION_ANNOTATION = KontinuityConfiguration::class.asClassName()
 
 val FLOW = ClassName("kotlinx.coroutines.flow", "Flow")
 val STATE_FLOW = ClassName("kotlinx.coroutines.flow", "StateFlow")
