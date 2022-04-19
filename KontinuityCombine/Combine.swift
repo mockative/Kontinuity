@@ -58,3 +58,12 @@ public func createPublisher<Output, Failure: Error, Unit>(
         .flatMap { nativeFlow in createPublisher(for: nativeFlow) }
         .eraseToAnyPublisher()
 }
+
+// MARK: Suspend + StateFlow
+public func createPublisher<Output, Failure: Error, Unit>(
+    for nativeSuspend: @escaping NativeSuspend<NativeStateFlow<Output, Failure, Unit>, Failure, Unit>
+) -> AnyPublisher<Output, Failure> {
+    return createFuture(for: nativeSuspend)
+        .flatMap { nativeFlow in createPublisher(for: nativeFlow) }
+        .eraseToAnyPublisher()
+}
