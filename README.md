@@ -40,6 +40,8 @@ dependencies {
 }
 ```
 
+### Kotlin (Source)
+
 ```kotlin
 // Source (Kotlin)
 @Kontinuity
@@ -49,6 +51,8 @@ interface TaskService {
     suspend fun refresh()
 }
 ```
+
+### Kotlin (Generated)
 
 ```kotlin
 // Generated (Kotlin)
@@ -60,6 +64,8 @@ open class KTaskService(val wrapped: TaskService) {
         kontinuitySuspend { wrapped.refresh() }     
 }
 ```
+
+### Swift
 
 ```swift
 // Source (Swift)
@@ -85,5 +91,14 @@ struct TaskListView: View {
                 .sink { _ in } receiveValue: { _ in }
         }
     }
+}
+```
+
+### Kotlin (Koin)
+
+```kotlin
+// Source (Kotlin) - Koin
+fun createKontinuityModule() = module {
+    factory { createKontinuityWrapper(get<TaskService>()) }
 }
 ```
