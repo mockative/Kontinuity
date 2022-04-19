@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.internal
 
 import kotlinx.cinterop.UnsafeNumber
 import platform.Foundation.NSError

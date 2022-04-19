@@ -11,7 +11,7 @@ object Options {
 
     object Generator {
         // K%s
-        val wrapperName = source["kontinuity.generator.wrapperName"] ?: "K%s"
+        val wrapperName = source["kontinuity.generator.wrapperName"] ?: "K%T"
 
         // %K
         val transformedMemberName = source["kontinuity.generator.transformedMemberName"] ?: "%sK"

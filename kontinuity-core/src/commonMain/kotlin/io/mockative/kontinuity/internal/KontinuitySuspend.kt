@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.internal
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope

@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.internal
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
