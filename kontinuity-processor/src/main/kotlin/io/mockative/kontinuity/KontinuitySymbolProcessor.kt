@@ -120,15 +120,14 @@ internal fun CodeGenerator.addFunctionsFile(sourceFile: SourceFile, classDecs: L
 }
 
 internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunctions(classDecs: List<KSClassDeclaration>): FileSpec.Builder {
-    return classDecs.fold(this) { fileSpec, classDec ->
-        fileSpec.addGetKontinuityWrapperClassFunction(classDec)
-    }
+    return classDecs
+        .mapNotNull { classDec -> classDec.getWrapperClass() }
+        .fold(this) { fileSpec, wrapperClass ->
+            fileSpec.addGetKontinuityWrapperClassFunction(wrapperClass.source, wrapperClass)
+        }
 }
 
-internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunction(classDec: KSClassDeclaration): FileSpec.Builder {
-    val source = classDec.getSourceClass()
-    val wrapper = classDec.getWrapperClass()
-
+internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunction(source: SourceClass, wrapper: WrapperClass): FileSpec.Builder {
     return addFunction(
         FunSpec.builder("getKontinuityWrapperClass")
             .receiver(KCLASS.parameterizedBy(source.className))
@@ -139,15 +138,14 @@ internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunction(classDec: KSC
 }
 
 internal fun FileSpec.Builder.addCreateKontinuityWrapperFunctions(classDecs: List<KSClassDeclaration>): FileSpec.Builder {
-    return classDecs.fold(this) { fileSpec, classDec ->
-        fileSpec.addCreateKontinuityWrapperFunction(classDec)
-    }
+    return classDecs
+        .mapNotNull { classDec -> classDec.getWrapperClass() }
+        .fold(this) { fileSpec, wrapperClass ->
+            fileSpec.addCreateKontinuityWrapperFunction(wrapperClass.source, wrapperClass)
+        }
 }
 
-internal fun FileSpec.Builder.addCreateKontinuityWrapperFunction(classDec: KSClassDeclaration): FileSpec.Builder {
-    val source = classDec.getSourceClass()
-    val wrapper = classDec.getWrapperClass()
-
+internal fun FileSpec.Builder.addCreateKontinuityWrapperFunction(source: SourceClass, wrapper: WrapperClass): FileSpec.Builder {
     val parameterSpec = ParameterSpec.builder("wrapping", source.className)
         .build()
 

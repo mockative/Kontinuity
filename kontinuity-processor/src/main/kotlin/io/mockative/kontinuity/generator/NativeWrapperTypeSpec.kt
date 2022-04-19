@@ -1,5 +1,6 @@
 package io.mockative.kontinuity.generator
 
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
@@ -9,37 +10,39 @@ import io.mockative.kontinuity.*
 import io.mockative.kontinuity.getFunctionType
 import io.mockative.kontinuity.getReturnType
 
-data class SourceClass(val className: ClassName)
+data class SourceClass(val declaration: KSClassDeclaration, val className: ClassName)
 
-data class WrapperClass(val className: ClassName)
+data class WrapperClass(val className: ClassName, val source: SourceClass)
 
 fun FileSpec.Builder.addWrapperTypes(classDecs: List<KSClassDeclaration>) =
-    classDecs.fold(this) { fileSpec, classDec -> fileSpec.addWrapperType(classDec) }
+    classDecs
+        .mapNotNull { classDec -> classDec.getWrapperClass() }
+        .fold(this) { fileSpec, wrapperClass ->
+            fileSpec.addWrapperType(wrapperClass)
+        }
 
-fun FileSpec.Builder.addWrapperType(classDec: KSClassDeclaration) =
+private fun FileSpec.Builder.addWrapperType(classDec: WrapperClass) =
     addType(classDec.buildWrapperTypeSpec())
 
-private fun KSClassDeclaration.buildWrapperTypeSpec(): TypeSpec {
-    val source = getSourceClass()
-    val wrapper = getWrapperClass()
-
-    val typeParameterResolver = typeParameters.toTypeParameterResolver()
+private fun WrapperClass.buildWrapperTypeSpec(): TypeSpec {
+    val declaration = source.declaration
+    val typeParameterResolver = declaration.typeParameters.toTypeParameterResolver()
 
     val wrappedPropertySpec = buildWrappedPropertySpec(source)
 
-    return TypeSpec.classBuilder(wrapper.className)
+    return TypeSpec.classBuilder(className)
         .addModifiers(KModifier.OPEN)
         .addProperty(wrappedPropertySpec)
         .addEmptyConstructor()
         .addWrappingConstructor(source, wrappedPropertySpec)
-        .addProperties(buildNativePropertySpecs(typeParameterResolver))
-        .addFunctions(buildNativeFunSpecs(typeParameterResolver))
-        .addKdoc(docString?.trim() ?: "")
+        .addProperties(declaration.buildNativePropertySpecs(typeParameterResolver))
+        .addFunctions(declaration.buildNativeFunSpecs(typeParameterResolver))
+        .addKdoc(declaration.docString?.trim() ?: "")
         .build()
 }
 
 internal fun KSClassDeclaration.getSourceClass() =
-    SourceClass(toClassName())
+    SourceClass(this, toClassName())
 
 private fun buildWrappedPropertySpec(source: SourceClass) =
     PropertySpec.builder("wrapped", source.className, KModifier.PRIVATE, KModifier.LATEINIT)
@@ -64,6 +67,7 @@ private fun TypeSpec.Builder.addWrappingConstructor(source: SourceClass, propert
 private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypeParameterResolver): List<FunSpec> {
     return getAllFunctions()
         .filter { it.isPublic() }
+        .mapNotNull { it.getKontinuityFunctionDeclaration(typeParameterResolver) }
         .map { it.buildNativeFunSpec(typeParameterResolver) }
         .toList()
 }
@@ -74,48 +78,66 @@ private fun KSFunctionDeclaration.getModifiers(): List<KModifier> =
         else -> emptyList()
     }
 
-private fun KSFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: TypeParameterResolver): FunSpec {
-    val name = simpleName.asString()
+data class KontinuityFunctionDeclaration(
+    val function: KSFunctionDeclaration,
+    val sourceName: String,
+    val wrapperName: String,
+    val type: FunctionType,
+)
 
-    val functionType = getFunctionType(typeParameterResolver)
-    val nativeName = getNativeName(functionType)
-    val modifiers = getModifiers()
+private fun KSFunctionDeclaration.getKontinuityFunctionDeclaration(typeParameterResolver: TypeParameterResolver): KontinuityFunctionDeclaration? {
+    val annotation = getAnnotationsByType(Kontinuity::class).firstOrNull()
+    val generate = annotation?.generate ?: true
+    if (!generate) {
+        return null
+    }
 
-    val builder = FunSpec.builder(nativeName)
+    val sourceName = simpleName.asString()
+    val type = getFunctionType(typeParameterResolver)
+    val wrapperName = annotation?.name?.ifEmpty { null } ?: getWrapperName(type)
+    return KontinuityFunctionDeclaration(this, sourceName, wrapperName, type)
+}
+
+private fun KontinuityFunctionDeclaration.buildNativeFunSpec(typeParameterResolver: TypeParameterResolver): FunSpec {
+    val modifiers = function.getModifiers()
+
+    val builder = FunSpec.builder(wrapperName)
         .addModifiers(modifiers)
-        .addTypeVariables(buildNativeTypeParameterSpecs(typeParameterResolver))
-        .addParameters(buildNativeParameterSpecs(typeParameterResolver))
-        .addAnnotations(buildNativeThrowsAnnotationSpecs())
+        .addTypeVariables(function.buildNativeTypeParameterSpecs(typeParameterResolver))
+        .addParameters(function.buildNativeParameterSpecs(typeParameterResolver))
+        .addAnnotations(function.buildNativeThrowsAnnotationSpecs())
 
-    val arguments = parameters.joinToString(", ") { parameter -> parameter.name!!.asString() }
+    val arguments = function.parameters.joinToString(", ") { parameter ->
+        parameter.name!!.asString()
+    }
 
-    return when (functionType) {
-        is FunctionType.Blocking -> when (val returnType = functionType.returnType) {
+    return when (type) {
+        is FunctionType.Blocking -> when (val returnType = type.returnType) {
             is ReturnType.Value -> builder
                 .returns(returnType.type)
-                .addStatement("return wrapped.$name($arguments)")
+                .addStatement("return wrapped.$sourceName($arguments)")
                 .build()
             is ReturnType.Flow -> builder
-                .implementsFlow(returnType.elementType, name, arguments)
+                .implementsFlow(returnType.elementType, sourceName, arguments)
                 .build()
             is ReturnType.StateFlow -> builder
-                .implementsStateFlow(returnType.elementType, name, arguments)
+                .implementsStateFlow(returnType.elementType, sourceName, arguments)
                 .build()
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
-        is FunctionType.Suspending -> when (val returnType = functionType.returnType) {
+        is FunctionType.Suspending -> when (val returnType = type.returnType) {
             is ReturnType.Value -> builder
-                .implementsSuspend(returnType.type, name, arguments)
+                .implementsSuspend(returnType.type, sourceName, arguments)
                 .build()
             is ReturnType.Flow -> builder
-                .implementsSuspendFlow(returnType.elementType, name, arguments)
+                .implementsSuspendFlow(returnType.elementType, sourceName, arguments)
                 .build()
             is ReturnType.StateFlow -> builder
-                .implementsSuspendStateFlow(returnType.elementType, name, arguments)
+                .implementsSuspendStateFlow(returnType.elementType, sourceName, arguments)
                 .build()
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
-        else -> throw IllegalStateException("Unknown function type ${functionType::class}")
+        else -> throw IllegalStateException("Unknown function type ${type::class}")
     }
 }
 
@@ -205,78 +227,86 @@ private fun FunSpec.Builder.implementsSuspendStateFlow(
 private fun KSClassDeclaration.buildNativePropertySpecs(typeParameterResolver: TypeParameterResolver): List<PropertySpec> {
     return getAllProperties()
         .filter { it.isPublic() }
-        .map { it.buildNativePropertySpec(typeParameterResolver) }
+        .mapNotNull { it.getKontinuityPropertyDeclaration(typeParameterResolver) }
+        .map { it.buildNativePropertySpec() }
         .toList()
 }
 
-private fun KSPropertyDeclaration.buildNativePropertySpec(typeParameterResolver: TypeParameterResolver): PropertySpec {
-    val returnType = type.getReturnType(typeParameterResolver)
-    val name = getNativeName(returnType)
-//    val name = simpleName.asString()
-//    val modifiers = listOf(KModifier.OVERRIDE)
+data class KontinuityPropertyDeclaration(
+    val property: KSPropertyDeclaration,
+    val sourceName: String,
+    val wrapperName: String,
+    val type: ReturnType,
+)
+
+private fun KSPropertyDeclaration.getKontinuityPropertyDeclaration(typeParameterResolver: TypeParameterResolver): KontinuityPropertyDeclaration? {
+    val annotation = getAnnotationsByType(Kontinuity::class).firstOrNull()
+    val generate = annotation?.generate ?: true
+    if (!generate) {
+        return null
+    }
+
+    val sourceName = simpleName.asString()
+    val type = type.getReturnType(typeParameterResolver)
+    val wrapperName = annotation?.name?.ifEmpty { null } ?: getWrapperName(type)
+    return KontinuityPropertyDeclaration(this, sourceName, wrapperName, type)
+}
+
+private fun KontinuityPropertyDeclaration.buildNativePropertySpec(): PropertySpec {
     val modifiers = emptyList<KModifier>()
 
-    return when (returnType) {
+    return when (type) {
         is ReturnType.Value ->
-            buildNonFlowNativePropertySpec(name, returnType.type, modifiers)
+            buildNonFlowNativePropertySpec(type.type, modifiers)
 
         is ReturnType.Flow ->
-            buildFlowNativePropertySpec(name, returnType.elementType, modifiers)
+            buildFlowNativePropertySpec(type.elementType, modifiers)
 
         is ReturnType.StateFlow ->
-            buildStateFlowNativePropertySpec(name, returnType.elementType, modifiers)
+            buildStateFlowNativePropertySpec(type.elementType, modifiers)
 
-        else -> throw IllegalStateException("Unknown return type ${returnType::class}")
+        else -> throw IllegalStateException("Unknown return type ${type::class}")
     }
 }
 
-private fun KSPropertyDeclaration.buildNonFlowNativePropertySpec(
-    name: String,
+private fun KontinuityPropertyDeclaration.buildNonFlowNativePropertySpec(
     propertyDecType: TypeName,
     modifiers: List<KModifier>
-) = PropertySpec.builder(name, propertyDecType, modifiers)
-    .mutable(isMutable)
+) = PropertySpec.builder(wrapperName, propertyDecType, modifiers)
+    .mutable(property.isMutable)
     .getter(
         FunSpec.getterBuilder()
-            .addStatement("return wrapped.${simpleName.asString()}")
+            .addStatement("return wrapped.$sourceName")
             .build()
     )
     .setter(
-        setter?.let {
+        property.setter?.let {
             FunSpec.setterBuilder()
                 .addParameter("newValue", propertyDecType)
-                .addStatement("wrapped.${simpleName.asString()} = newValue")
+                .addStatement("wrapped.$sourceName = newValue")
                 .build()
         }
     )
     .build()
 
-private fun KSPropertyDeclaration.buildFlowNativePropertySpec(
-    name: String,
+private fun KontinuityPropertyDeclaration.buildFlowNativePropertySpec(
     elementType: TypeName,
     modifiers: List<KModifier>
-) = PropertySpec.builder(name, KONTINUITY_FLOW.parameterizedBy(elementType), modifiers)
+) = PropertySpec.builder(wrapperName, KONTINUITY_FLOW.parameterizedBy(elementType), modifiers)
     .getter(
         FunSpec.getterBuilder()
-            .addStatement(
-                "return wrapped.${simpleName.asString()}.%M()",
-                TO_KONTINUITY_FLOW_FUNCTION
-            )
+            .addStatement("return wrapped.$sourceName.%M()", TO_KONTINUITY_FLOW_FUNCTION)
             .build()
     )
     .build()
 
-private fun KSPropertyDeclaration.buildStateFlowNativePropertySpec(
-    name: String,
+private fun KontinuityPropertyDeclaration.buildStateFlowNativePropertySpec(
     elementType: TypeName,
     modifiers: List<KModifier>
-) = PropertySpec.builder(name, KONTINUITY_STATE_FLOW.parameterizedBy(elementType), modifiers)
+) = PropertySpec.builder(wrapperName, KONTINUITY_STATE_FLOW.parameterizedBy(elementType), modifiers)
     .getter(
         FunSpec.getterBuilder()
-            .addStatement(
-                "return wrapped.${simpleName.asString()}.%M()",
-                TO_KONTINUITY_STATE_FLOW_FUNCTION
-            )
+            .addStatement("return wrapped.$sourceName.%M()", TO_KONTINUITY_STATE_FLOW_FUNCTION)
             .build()
     )
     .build()

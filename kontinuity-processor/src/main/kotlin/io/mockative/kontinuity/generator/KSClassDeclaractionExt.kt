@@ -8,19 +8,19 @@ import io.mockative.kontinuity.Configuration
 import io.mockative.kontinuity.Kontinuity
 import io.mockative.kontinuity.Options
 
-private fun KSClassDeclaration.getAnnotatedName(): String? {
-    return getAnnotationsByType(Kontinuity::class).firstOrNull()
-        ?.name
-        ?.ifEmpty { null }
-}
+fun KSClassDeclaration.getWrapperClass(): WrapperClass? {
+    val annotation = getAnnotationsByType(Kontinuity::class).firstOrNull()
+    val generate = annotation?.generate ?: true
+    if (!generate) {
+        return null
+    }
 
-fun KSClassDeclaration.getWrapperClass(): WrapperClass {
-    val format = getAnnotatedName()
+    val format = annotation?.name?.ifEmpty { null }
         ?: Configuration.className
         ?: Options.Generator.className
 
     val className = toClassName()
-    return WrapperClass(className.toFormattedClassName(format))
+    return WrapperClass(className.toFormattedClassName(format), getSourceClass())
 }
 
 private fun ClassName.toFormattedClassName(format: String): ClassName =
