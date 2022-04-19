@@ -41,3 +41,48 @@ dependencies {
     }
 }
 ```
+
+```kotlin
+@Kontinuity
+interface TaskService {
+    val tasks: StateFlow<Task>
+    
+    suspend fun refresh()
+}
+```
+
+```kotlin
+open class KTaskService(val wrapped: TaskService) {
+    val tasksK: KontinuityStateFlow<Task>
+        get() = wrapped.toKontinuityStateFlow()
+    
+    fun refreshK() = 
+        kontinuitySuspend { wrapped.refresh() }     
+}
+```
+
+```swift
+struct TaskListView: View {
+    @Environment(\.taskService) private var taskService: KTaskService
+    
+    @State private var tasks: [Task]? = nil
+    @State private var tasksSubscription: AnyCancellable? = nil
+    
+    @State private var refreshSubscription: AnyCancellable? = nil
+    
+    var body: some View {
+        List(tasks ?? getValue(of: taskService.tasksK)) { task in
+            TaskListItem(task)
+        }
+        .onAppear {
+            tasksSubscription = createPublisher(for: taskService.tasksK)
+                .sink { _ in } receiveValue: { tasks in
+                    self.tasks = tasks
+                }
+        
+            refreshSubscription = createFuture(for: taskService.refreshK())
+                .sink { _ in } receiveValue: { _ in }
+        }
+    }
+}
+```
