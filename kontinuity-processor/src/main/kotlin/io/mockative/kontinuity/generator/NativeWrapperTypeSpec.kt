@@ -1,10 +1,7 @@
 package io.mockative.kontinuity.generator
 
 import com.google.devtools.ksp.isPublic
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import com.google.devtools.ksp.symbol.KSValueParameter
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.*
@@ -12,40 +9,56 @@ import io.mockative.kontinuity.*
 import io.mockative.kontinuity.getFunctionType
 import io.mockative.kontinuity.getReturnType
 
-fun KSClassDeclaration.buildNativeWrapperTypeSpec(className: ClassName): TypeSpec {
+data class SourceClass(val className: ClassName)
+
+data class WrapperClass(val className: ClassName)
+
+fun FileSpec.Builder.addWrapperTypes(classDecs: List<KSClassDeclaration>) =
+    classDecs.fold(this) { fileSpec, classDec -> fileSpec.addWrapperType(classDec) }
+
+fun FileSpec.Builder.addWrapperType(classDec: KSClassDeclaration) =
+    addType(classDec.buildWrapperTypeSpec())
+
+private fun KSClassDeclaration.buildWrapperTypeSpec(): TypeSpec {
+    val source = getSourceClass()
+    val wrapper = getWrapperClass()
+
     val typeParameterResolver = typeParameters.toTypeParameterResolver()
 
-    val wrappedPropertySpec = buildWrappedPropertySpec()
+    val wrappedPropertySpec = buildWrappedPropertySpec(source)
 
-    return TypeSpec.classBuilder(className)
+    return TypeSpec.classBuilder(wrapper.className)
         .addModifiers(KModifier.OPEN)
         .addProperty(wrappedPropertySpec)
-        .addFunction(buildEmptyConstructorSpec())
-        .addFunction(buildWrappedConstructorSpec(wrappedPropertySpec))
+        .addEmptyConstructor()
+        .addWrappingConstructor(source, wrappedPropertySpec)
         .addProperties(buildNativePropertySpecs(typeParameterResolver))
         .addFunctions(buildNativeFunSpecs(typeParameterResolver))
         .addKdoc(docString?.trim() ?: "")
         .build()
 }
 
-private fun KSClassDeclaration.buildWrappedPropertySpec() =
-    PropertySpec.builder("wrapped", toClassName(), KModifier.PRIVATE, KModifier.LATEINIT)
+internal fun KSClassDeclaration.getSourceClass() =
+    SourceClass(toClassName())
+
+private fun buildWrappedPropertySpec(source: SourceClass) =
+    PropertySpec.builder("wrapped", source.className, KModifier.PRIVATE, KModifier.LATEINIT)
         .mutable(true)
         .build()
 
-private fun KSClassDeclaration.buildWrappedConstructorSpec(propertySpec: PropertySpec): FunSpec {
-    val parameter = ParameterSpec.builder("wrapping", toClassName())
+private fun TypeSpec.Builder.addEmptyConstructor() =
+    addFunction(FunSpec.constructorBuilder().build())
+
+private fun TypeSpec.Builder.addWrappingConstructor(source: SourceClass, propertySpec: PropertySpec): TypeSpec.Builder {
+    val parameter = ParameterSpec.builder("wrapping", source.className)
         .build()
 
-    return FunSpec.constructorBuilder()
-        .addParameter(parameter)
-        .addStatement("%N = %N", propertySpec, parameter)
-        .build()
-}
-
-private fun KSClassDeclaration.buildEmptyConstructorSpec(): FunSpec {
-    return FunSpec.constructorBuilder()
-        .build()
+    return addFunction(
+        FunSpec.constructorBuilder()
+            .addParameter(parameter)
+            .addStatement("%N = %N", propertySpec, parameter)
+            .build()
+    )
 }
 
 private fun KSClassDeclaration.buildNativeFunSpecs(typeParameterResolver: TypeParameterResolver): List<FunSpec> {
@@ -267,3 +280,25 @@ private fun KSPropertyDeclaration.buildStateFlowNativePropertySpec(
             .build()
     )
     .build()
+
+internal fun KSFunctionDeclaration.buildNativeThrowsAnnotationSpecs() =
+    annotations
+        .filter { it.shortName.asString() == KOTLIN_THROWS.simpleName }
+        .filter { it.annotationType.resolve().toClassName() == KOTLIN_THROWS }
+        .mapNotNull { it.arguments.firstOrNull()?.value as? List<*> }
+        .map { value -> value.filterIsInstance<KSType>() }
+        .map { types -> types.mapNotNull { it.toClassName() } }
+        .map { classNames -> buildNativeThrowsAnnotationSpec(classNames) }
+        .toList()
+
+private fun buildNativeThrowsAnnotationSpec(classNames: List<ClassName>) =
+    AnnotationSpec.builder(KOTLIN_THROWS)
+        .addMember(classNames.joinToString(", ") { "%T::class" }, *classNames.toTypedArray())
+        .build()
+
+private fun KSType.toClassName() =
+    when (val declaration = declaration) {
+        is KSClassDeclaration -> declaration.toClassName()
+        is KSTypeAlias -> declaration.toClassName()
+        else -> null
+    }

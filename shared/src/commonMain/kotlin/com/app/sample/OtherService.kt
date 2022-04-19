@@ -7,3 +7,6 @@ import kotlinx.coroutines.flow.Flow
 interface OtherService {
     var myFlow: Flow<Boolean>
 }
+
+@Kontinuity
+interface OtherService2

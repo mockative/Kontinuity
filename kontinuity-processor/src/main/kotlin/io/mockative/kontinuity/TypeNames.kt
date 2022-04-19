@@ -7,8 +7,9 @@ import com.squareup.kotlinpoet.UNIT
 
 val KOTLIN_THROWS = ClassName("kotlin", "Throws")
 val KOTLIN_ANY = ClassName("kotlin", "Any")
+val KCLASS = ClassName("kotlin.reflect", "KClass")
 
-const val KONTINUITY_ANNOTATION = "io.mockative.kontinuity.Kontinuity"
+val KONTINUITY_ANNOTATION = ClassName("io.mockative.kontinuity", "Kontinuity")
 
 val FLOW = ClassName("kotlinx.coroutines.flow", "Flow")
 val STATE_FLOW = ClassName("kotlinx.coroutines.flow", "StateFlow")

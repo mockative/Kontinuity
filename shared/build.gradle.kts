@@ -41,7 +41,6 @@ kotlin {
 
                 // Koin
                 implementation("io.insert-koin:koin-core:3.1.6")
-                implementation(project(":kontinuity-koin"))
             }
 
             kotlin.srcDir("build/generated/ksp/commonMain/kotlin")
@@ -106,7 +105,6 @@ android {
 
 dependencies {
     add("kspIos", project(":kontinuity-processor"))
-    add("kspIos", project(":kontinuity-koin-processor"))
 }
 
 ksp {

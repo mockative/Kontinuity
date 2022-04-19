@@ -21,5 +21,3 @@ if (startParameter.projectProperties.containsKey("check_publication")) {
 include(":shared")
 include(":kontinuity-core")
 include(":kontinuity-processor")
-include(":kontinuity-koin")
-include(":kontinuity-koin-processor")
