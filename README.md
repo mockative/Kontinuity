@@ -56,7 +56,7 @@ open class KTaskService(val wrapped: TaskService) {
     val tasksK: KontinuityStateFlow<Task>
         get() = wrapped.toKontinuityStateFlow()
     
-    fun refreshK() = 
+    fun refreshK(): KontinuitySuspend<Unit> = 
         kontinuitySuspend { wrapped.refresh() }     
 }
 ```
