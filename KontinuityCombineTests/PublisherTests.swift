@@ -8,11 +8,11 @@ class PublisherTests : XCTestCase {
     func testCancellableInvoked() {
         var cancelCount = 0
         
-        let nativeFlow: NativeFlow<TestValue, NSError, Void> = { _, _ in
+        let kontinuityFlow: KontinuityFlow<TestValue, NSError, Void> = { _, _ in
             return { cancelCount += 1 }
         }
         
-        let cancellable = createPublisher(for: nativeFlow)
+        let cancellable = createPublisher(for: kontinuityFlow)
             .sink { _ in } receiveValue: { _ in }
         
         XCTAssertEqual(cancelCount, 0, "Cancellable shouldn't be invoked yet")
@@ -22,7 +22,7 @@ class PublisherTests : XCTestCase {
     
     func testCompletionWithCorrectValues() {
         let values = [TestValue(), TestValue(), TestValue(), TestValue(), TestValue()]
-        let nativeFlow: NativeFlow<TestValue, NSError, Void> = { itemCallback, completionCallback in
+        let kontinuityFlow: KontinuityFlow<TestValue, NSError, Void> = { itemCallback, completionCallback in
             for value in values {
                 itemCallback(value, ())
             }
@@ -31,7 +31,7 @@ class PublisherTests : XCTestCase {
         }
         var completionCount = 0
         var valueCount = 0
-        let cancellable = createPublisher(for: nativeFlow)
+        let cancellable = createPublisher(for: kontinuityFlow)
             .sink { completion in
                 guard case .finished = completion else {
                     XCTFail("Publisher should complete without error")
@@ -49,13 +49,13 @@ class PublisherTests : XCTestCase {
     
     func testCompletionWithError() {
         let error = NSError(domain: "Test", code: 0)
-        let nativeFlow: NativeFlow<TestValue, NSError, Void> = { _, completionCallback in
+        let kontinuityFlow: KontinuityFlow<TestValue, NSError, Void> = { _, completionCallback in
             completionCallback(error, ())
             return { }
         }
         var completionCount = 0
         var valueCount = 0
-        let cancellable = createPublisher(for: nativeFlow)
+        let cancellable = createPublisher(for: kontinuityFlow)
             .sink { completion in
                 guard case let .failure(receivedError) = completion else {
                     XCTFail("Publisher should complete with an error")

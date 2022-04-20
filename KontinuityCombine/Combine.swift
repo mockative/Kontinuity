@@ -3,34 +3,34 @@ import KontinuityCore
 
 // MARK: Suspend
 public func createFuture<Result, Failure: Error, Unit>(
-    for nativeSuspend: @escaping NativeSuspend<Result, Failure, Unit>
+    for kontinuitySuspend: @escaping KontinuitySuspend<Result, Failure, Unit>
 ) -> AnyPublisher<Result, Failure> {
-    NativeSuspendPublisher(nativeSuspend: nativeSuspend)
+    KontinuitySuspendPublisher(kontinuitySuspend: kontinuitySuspend)
         .eraseToAnyPublisher()
 }
 
 // MARK: Flow
 public func createPublisher<Output, Failure: Error, Unit>(
-    for nativeFlow: @escaping NativeFlow<Output, Failure, Unit>
+    for kontinuityFlow: @escaping KontinuityFlow<Output, Failure, Unit>
 ) -> AnyPublisher<Output, Failure> {
-    NativeFlowPublisher(nativeFlow: nativeFlow)
+    KontinuityFlowPublisher(kontinuityFlow: kontinuityFlow)
         .eraseToAnyPublisher()
 }
 
 // MARK: StateFlow
 public func createPublisher<Output, Failure: Error, Unit>(
-    for nativeStateFlow: @escaping NativeStateFlow<Output, Failure, Unit>
+    for kontinuityStateFlow: @escaping KontinuityStateFlow<Output, Failure, Unit>
 ) -> AnyPublisher<Output, Failure> {
-    NativeStateFlowPublisher(nativeStateFlow: nativeStateFlow)
+    KontinuityStateFlowPublisher(kontinuityStateFlow: kontinuityStateFlow)
         .eraseToAnyPublisher()
 }
 
 public func getValue<Output, Failure: Error, Unit>(
-    of nativeStateFlow: @escaping NativeStateFlow<Output, Failure, Unit>
+    of kontinuityStateFlow: @escaping KontinuityStateFlow<Output, Failure, Unit>
 ) -> Output {
     var receivedValue: Output? = nil
     
-    _ = nativeStateFlow(
+    _ = kontinuityStateFlow(
         "receive",
         { value, unit in
             // This is called synchronously
@@ -52,18 +52,18 @@ public func getValue<Output, Failure: Error, Unit>(
 
 // MARK: Suspend + Flow
 public func createPublisher<Output, Failure: Error, Unit>(
-    for nativeSuspend: @escaping NativeSuspend<NativeFlow<Output, Failure, Unit>, Failure, Unit>
+    for kontinuitySuspend: @escaping KontinuitySuspend<KontinuityFlow<Output, Failure, Unit>, Failure, Unit>
 ) -> AnyPublisher<Output, Failure> {
-    return createFuture(for: nativeSuspend)
-        .flatMap { nativeFlow in createPublisher(for: nativeFlow) }
+    return createFuture(for: kontinuitySuspend)
+        .flatMap { kontinuityFlow in createPublisher(for: kontinuityFlow) }
         .eraseToAnyPublisher()
 }
 
 // MARK: Suspend + StateFlow
 public func createPublisher<Output, Failure: Error, Unit>(
-    for nativeSuspend: @escaping NativeSuspend<NativeStateFlow<Output, Failure, Unit>, Failure, Unit>
+    for kontinuitySuspend: @escaping KontinuitySuspend<KontinuityStateFlow<Output, Failure, Unit>, Failure, Unit>
 ) -> AnyPublisher<Output, Failure> {
-    return createFuture(for: nativeSuspend)
-        .flatMap { nativeFlow in createPublisher(for: nativeFlow) }
+    return createFuture(for: kontinuitySuspend)
+        .flatMap { kontinuityFlow in createPublisher(for: kontinuityFlow) }
         .eraseToAnyPublisher()
 }

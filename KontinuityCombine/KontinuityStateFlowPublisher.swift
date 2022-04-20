@@ -1,22 +1,27 @@
 import Combine
 import KontinuityCore
 
-internal struct NativeFlowPublisher<Output, Failure: Error, Unit>: Publisher {
-    let nativeFlow: NativeFlow<Output, Failure, Unit>
+internal struct KontinuityStateFlowPublisher<Output, Failure: Error, Unit>: Publisher {
+    let kontinuityStateFlow: KontinuityStateFlow<Output, Failure, Unit>
     
     func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
-        let subscription = NativeFlowSubscription(nativeFlow: nativeFlow, subscriber: subscriber)
+        let subscription = KontinuityStateFlowSubscription(kontinuityStateFlow: kontinuityStateFlow, subscriber: subscriber)
         subscriber.receive(subscription: subscription)
     }
 }
 
-internal class NativeFlowSubscription<Output, Failure, Unit, S: Subscriber>: Subscription where S.Input == Output, S.Failure == Failure {
-    private var nativeCancellable: NativeCancellable<Unit>? = nil
+internal class KontinuityStateFlowSubscription<Output, Failure, Unit, S: Subscriber>: Subscription where S.Input == Output, S.Failure == Failure {
+    private var kontinuityCancellable: KontinuityCancellable<Unit>? = nil
     private var subscriber: S?
     
-    init(nativeFlow: NativeFlow<Output, Failure, Unit>, subscriber: S) {
+    init(kontinuityStateFlow: KontinuityStateFlow<Output, Failure, Unit>, subscriber: S) {
         self.subscriber = subscriber
-        self.nativeCancellable = nativeFlow(
+        self.kontinuityCancellable = kontinuityStateFlow(
+            "subscribe",
+            { value, unit in
+                // This won't actually be called
+                return unit
+            },
             { item, unit in
                 _ = self.subscriber?.receive(item)
                 return unit
@@ -40,7 +45,7 @@ internal class NativeFlowSubscription<Output, Failure, Unit, S: Subscriber>: Sub
     func cancel() {
         subscriber = nil
         
-        _ = nativeCancellable?()
-        nativeCancellable = nil
+        _ = kontinuityCancellable?()
+        kontinuityCancellable = nil
     }
 }
