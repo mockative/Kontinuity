@@ -8,21 +8,19 @@
 Effortless use of Kotlin Multiplatform coroutines in Swift, including `suspend` functions and 
 `Flow<T>` returning members.
 
-## Installation for Multiplatform projects
+## Installation
 
-Kontinuity uses the [Kotlin Symbol Processing API][KSP] to process Kotlin code, as well as 
-generating Kotlin and Swift code, and as such, it requires adding the KSP plugin in addition to 
-adding the runtime library and symbol processor dependencies.
+Kontinuity includes both a core Kotlin library, a [Kotlin Symbol Processor][KSP], and various Swift 
+Package Manager packages, depending on how you want to consume the generated code. Please make sure 
+to use the same versions of each individual part. 
 
-**build.gradle.kts**
+### Kotlin (Gradle)
+
+In your Kotlin Multiplatform module, add the following to your __build.gradle.kts__ file:
 
 ```kotlin
 plugins {
     id("com.google.devtools.ksp")
-}
-
-repositories {
-    mavenCentral()
 }
 
 kotlin {
@@ -38,6 +36,17 @@ kotlin {
 dependencies {
     add("kspIos", "io.mockative:kontinuity-processor:1.0.0-SNAPSHOT")
 }
+```
+
+### Swift (Swift Package Manager)
+
+The Swift libraries are available using Swift Package Manager (SPM), by adding the following to 
+your __Package.swift__ file, or in your Xcode Project's Package Dependencies.
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/mockative/Kontinuity.git", from: "<version>")
+]
 ```
 
 ### Kotlin (Source)
