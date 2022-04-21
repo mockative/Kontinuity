@@ -5,14 +5,14 @@
 [![Build](https://github.com/mockative/mockative/actions/workflows/build.yml/badge.svg)](https://github.com/mockative/mockative/actions/workflows/build.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.mockative/kontinuity-processor)](https://search.maven.org/artifact/io.mockative/kontinuity-processor)
 
-Effortless use of Kotlin Multiplatform coroutines in Swift, including `suspend` functions and 
+Effortless use of Kotlin Multiplatform coroutines in Swift, including `suspend` functions and
 `Flow<T>` returning members.
 
 ## Installation
 
-Kontinuity includes both a core Kotlin library, a [Kotlin Symbol Processor][KSP], and various Swift 
-Package Manager packages, depending on how you want to consume the generated code. Please make sure 
-to use the same versions of each individual part. 
+Kontinuity includes both a core Kotlin library, a [Kotlin Symbol Processor][KSP], and various Swift
+Package Manager packages, depending on how you want to consume the generated code. Please make sure
+to use the same versions of each individual part.
 
 ### Kotlin (Gradle)
 
@@ -40,7 +40,7 @@ dependencies {
 
 ### Swift (Swift Package Manager)
 
-The Swift libraries are available using Swift Package Manager (SPM), by adding the following to 
+The Swift libraries are available using Swift Package Manager (SPM), by adding the following to
 your __Package.swift__ file, or in your Xcode Project's Package Dependencies.
 
 ```swift
@@ -51,7 +51,7 @@ dependencies: [
 
 ## Usage
 
-For each Kotlin class or interface annotated with `@Kontinuity`, a wrapper class is generated, 
+For each Kotlin class or interface annotated with `@Kontinuity`, a wrapper class is generated,
 referred to as the "Kontinuity Wrapper".
 
 Given a Kotlin interface like the following:
@@ -62,9 +62,9 @@ package com.app.sample.tasks
 @Kontinuity
 interface TaskService {
     val tasks: StateFlow<List<Task>>
-    
+
     suspend fun createTask(task: Task)
-    
+
     fun close()
 }
 ```
@@ -82,22 +82,22 @@ open class KTaskService(private val wrapped: TaskService) {
 
     fun refreshK(): KontinuitySuspend<Unit> =
         kontinuitySuspend { wrapped.refresh() }
-    
+
     // Simple members don't require a name transformation 
-    fun close() = 
+    fun close() =
         wrapped.close()
 }
 ```
 
 ### Name Transformations
 
-Kontinuity Wrapper classes have their names transformed from the type they're wrapping, by 
-prefixing the class with `K`. Coroutine members of Kontinuity Wrapper classes also have their names 
-transformed, in order to prevent the Kotlin compiler from suffixing it with `_` when compiling for 
+Kontinuity Wrapper classes have their names transformed from the type they're wrapping, by prefixing
+the class with `K`. Coroutine members of Kontinuity Wrapper classes also have their names
+transformed, in order to prevent the Kotlin compiler from suffixing it with `_` when compiling for
 iOS/Darwin, which it does to prevent member signature clashes when interfaces are used.
 
-Both the format of the Kontinuity Wrapper class name and the members within can be controlled 
-through the use of the `@Kontinuity` and `@KontinuityMember` annotations, the 
+Both the format of the Kontinuity Wrapper class name and the members within can be controlled
+through the use of the `@Kontinuity` and `@KontinuityMember` annotations, the
 `@KontinuityConfiguration` annotation, and some KSP arguments.
 
 ```kotlin
@@ -143,7 +143,7 @@ annotation class KontinuityMember(
     // Specifies the name of the generated member, using the format specifier `%M` as a placeholder
     // for the member name.
     val name: String = "",
-            
+
     // Controls whether a member for the annotated member is generated in the Kontinuity Wrapper.
     // Defaults to `true`.
     val generate: Boolean = true
@@ -156,14 +156,14 @@ annotation class KontinuityConfiguration(
     // Specifies the name of the generated Kontinuity Wrapper class, using the format specifier
     // `%T` as a placeholder for the name of the class or interface this annotation is applied to.
     val wrappers: String = "",
-            
+
     // Controls how a Kontinuity Wrapper is generated for the annotated class or interface.
     val generation: KontinuityGeneration = KontinuityGeneration.OPT_OUT,
-            
+
     // Specifies the format used when generating coroutine members in the Kontinuity Wrapper of the
     // annotated type, using `%M` as a placeholder for the name of the member.
     val coroutines: String = "",
-            
+
     // Specifies the format used when generating simple members in the Kontinuity Wrapper of the
     // annotated type, using `%M` as a placeholder for the name of the member.
     val members: String = ""
@@ -179,7 +179,7 @@ annotation class KontinuityConfiguration(
 @Kontinuity
 interface TaskService {
     val tasks: StateFlow<Task>
-    
+
     suspend fun refresh()
 }
 ```
@@ -191,9 +191,9 @@ interface TaskService {
 open class KTaskService(val wrapped: TaskService) {
     val tasksK: KontinuityStateFlow<Task>
         get() = wrapped.toKontinuityStateFlow()
-    
-    fun refreshK(): KontinuitySuspend<Unit> = 
-        kontinuitySuspend { wrapped.refresh() }     
+
+    fun refreshK(): KontinuitySuspend<Unit> =
+        kontinuitySuspend { wrapped.refresh() }
 }
 ```
 
@@ -231,17 +231,22 @@ struct TaskListView: View {
 ```kotlin
 // Source (Kotlin) - Koin
 fun createKontinuityModule() = module {
-    factory { createKontinuityWrapper(get<TaskService>()) }
-}
+        factory { createKontinuityWrapper(get<TaskService>()) }
+    }
 ```
 
 ## Roadmap
 
-- [ ] Add global `@KontinuityScope` annotation to control the default scope through a 
+- [ ] Add global `@KontinuityScope` annotation to control the default scope through a
   `@SharedImmutable` global variable.
 - [ ] Add type-local `@KontinuityScope` annotation to control the default scope on a per-type basis.
 
 ## Credits
+
+[KMP-NativeCoroutines]: https://github.com/rickclephas/KMP-NativeCoroutines
+
+Kontinuity is heavily inspired by [rickclephas/KMP-NativeCoroutines][KMP-NativeCoroutines], and is
+essentially a Kotlin Symbol Processor version of that Kotlin Compiler Plugin.
 
 ## License
 
