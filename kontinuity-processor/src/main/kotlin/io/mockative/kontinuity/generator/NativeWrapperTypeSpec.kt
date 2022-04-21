@@ -45,8 +45,13 @@ internal fun KSClassDeclaration.getSourceClass() =
     SourceClass(this, toClassName())
 
 private fun buildWrappedPropertySpec(source: SourceClass) =
-    PropertySpec.builder("wrapped", source.className, KModifier.PRIVATE, KModifier.LATEINIT)
+    PropertySpec.builder("wrapped", source.className, KModifier.LATEINIT)
         .mutable(true)
+        .setter(
+            FunSpec.setterBuilder()
+                .addModifiers(KModifier.PRIVATE)
+                .build()
+        )
         .build()
 
 private fun TypeSpec.Builder.addEmptyConstructor() =
