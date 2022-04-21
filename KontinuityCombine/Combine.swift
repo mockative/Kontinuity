@@ -25,31 +25,6 @@ public func createPublisher<Output, Failure: Error, Unit>(
         .eraseToAnyPublisher()
 }
 
-public func getValue<Output, Failure: Error, Unit>(
-    of kontinuityStateFlow: @escaping KontinuityStateFlow<Output, Failure, Unit>
-) -> Output {
-    var receivedValue: Output? = nil
-    
-    _ = kontinuityStateFlow(
-        "receive",
-        { value, unit in
-            // This is called synchronously
-            receivedValue = value
-            return unit
-        },
-        { _, unit in
-            // This won't actually be called
-            return unit
-        },
-        { _, unit in
-            // This won't actually be called
-            return unit
-        }
-    )
-    
-    return receivedValue!
-}
-
 // MARK: Suspend + Flow
 public func createPublisher<Output, Failure: Error, Unit>(
     for kontinuitySuspend: @escaping KontinuitySuspend<KontinuityFlow<Output, Failure, Unit>, Failure, Unit>

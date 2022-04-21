@@ -89,6 +89,34 @@ open class KTaskService(private val wrapped: TaskService) {
 }
 ```
 
+### Swift
+
+The generated Kontinuity Wrapper can be used in Swift through `KontinuityCore` and one or more of 
+`KontinuityCombine`, `KontinuityAsync` or `KontinuityRxSwift`.
+
+```swift
+import KontinuityCore
+import KontinuityCombine
+
+val kotlinTaskService: TaskService
+val taskService = KTaskService(wrapped: kotlinTaskService)
+
+// Accessing the current value of a StateFlow
+val tasks = getValue(of: taskService.tasksK)
+
+// Subscribing to a Flow
+val subscription = createPublisher(for: taskService.tasksK)
+    .sink { completion in } receiveValue: { tasks in
+        print("tasks: \(tasks)")
+    } 
+
+// Calling a suspend function
+val subscription = createFuture(for: taskService.refreshK())
+    .sink { completion in
+        print("refresh: \(completion)")
+    } receiveValue: { unit in }
+```
+
 ### Name Transformations
 
 Kontinuity Wrapper classes have their names transformed from the type they're wrapping, by prefixing
@@ -194,35 +222,6 @@ open class KTaskService(val wrapped: TaskService) {
 
     fun refreshK(): KontinuitySuspend<Unit> =
         kontinuitySuspend { wrapped.refresh() }
-}
-```
-
-### Swift
-
-```swift
-// Source (Swift)
-struct TaskListView: View {
-    @Environment(\.taskService) private var taskService: KTaskService
-    
-    @State private var tasks: [Task]? = nil
-    @State private var tasksSubscription: AnyCancellable? = nil
-    
-    @State private var refreshSubscription: AnyCancellable? = nil
-    
-    var body: some View {
-        List(tasks ?? getValue(of: taskService.tasksK)) { task in
-            TaskListItem(task)
-        }
-        .onAppear {
-            tasksSubscription = createPublisher(for: taskService.tasksK)
-                .sink { _ in } receiveValue: { tasks in
-                    self.tasks = tasks
-                }
-        
-            refreshSubscription = createFuture(for: taskService.refreshK())
-                .sink { _ in } receiveValue: { _ in }
-        }
-    }
 }
 ```
 
