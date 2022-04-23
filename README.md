@@ -239,6 +239,7 @@ fun createKontinuityModule() = module {
 - [ ] Add global `@KontinuityScope` annotation to control the default scope through a
   `@SharedImmutable` global variable.
 - [ ] Add type-local `@KontinuityScope` annotation to control the default scope on a per-type basis.
+- [ ] Add Swift mock library and generator
 
 ## Credits
 
