@@ -198,6 +198,13 @@ annotation class KontinuityConfiguration(
 )
 ```
 
+### Dependency Injection
+
+If you're a fan of dependency injection, and like to register your Kotlin services within Kotlin 
+using a framework like Koin, you might come across the issue of not being able to register 
+
+Once you start using Kontinuity you'll  
+
 ### Swift
 
 ### Kotlin (Source)
@@ -230,8 +237,8 @@ open class KTaskService(val wrapped: TaskService) {
 ```kotlin
 // Source (Kotlin) - Koin
 fun createKontinuityModule() = module {
-        factory { createKontinuityWrapper(get<TaskService>()) }
-    }
+    factory { createKontinuityWrapper(get<TaskService>()) }
+  }
 ```
 
 ## Roadmap

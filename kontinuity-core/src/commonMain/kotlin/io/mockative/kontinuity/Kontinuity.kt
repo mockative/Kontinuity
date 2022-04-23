@@ -13,6 +13,8 @@ annotation class Kontinuity(
      */
     val name: String = "",
 
+    val generate: Boolean = true,
+
     /**
      * Controls how a Kontinuity Wrapper is generated for the annotated class or interface.
      */

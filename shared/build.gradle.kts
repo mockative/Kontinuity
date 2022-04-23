@@ -43,7 +43,7 @@ kotlin {
                 implementation("io.insert-koin:koin-core:3.1.6")
             }
 
-            kotlin.srcDir("build/generated/ksp/commonMain/kotlin")
+            kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
         }
         val commonTest by getting {
             dependencies {
@@ -64,14 +64,8 @@ kotlin {
             dependsOn(androidAndroidTest)
         }
 
-        val iosMain by getting {
-            kotlin.srcDir("build/generated/ksp/iosMain/kotlin")
-        }
-        val iosTest by getting {
-//            languageSettings {
-//                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-//            }
-        }
+        val iosMain by getting
+        val iosTest by getting
 
         val jsMain by getting
         val jsTest by getting {
@@ -104,7 +98,15 @@ android {
 }
 
 dependencies {
-    add("kspIos", project(":kontinuity-processor"))
+    add("kspCommonMainMetadata", project(":kontinuity-processor"))
+}
+
+afterEvaluate {
+    tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>> {
+        if (name != "kspCommonMainKotlinMetadata") {
+            dependsOn("kspCommonMainKotlinMetadata")
+        }
+    }
 }
 
 ksp {
