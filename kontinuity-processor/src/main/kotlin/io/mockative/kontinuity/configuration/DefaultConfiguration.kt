@@ -1,4 +1,6 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.configuration
+
+import io.mockative.kontinuity.KontinuityGeneration
 
 @Suppress("MayBeConstant")
 data class DefaultConfiguration(

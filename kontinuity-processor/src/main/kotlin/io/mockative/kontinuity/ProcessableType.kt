@@ -6,6 +6,8 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import io.mockative.kontinuity.configuration.ClassConfiguration
+import io.mockative.kontinuity.configuration.SourceConfiguration
 
 data class ProcessableType(
     val declaration: KSClassDeclaration,

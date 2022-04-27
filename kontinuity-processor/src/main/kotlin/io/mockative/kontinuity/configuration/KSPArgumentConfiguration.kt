@@ -1,4 +1,7 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.configuration
+
+import io.mockative.kontinuity.KontinuityGeneration
+import io.mockative.kontinuity.ksp.ifUnspecified
 
 data class KSPArgumentConfiguration(
     val wrappers: String,

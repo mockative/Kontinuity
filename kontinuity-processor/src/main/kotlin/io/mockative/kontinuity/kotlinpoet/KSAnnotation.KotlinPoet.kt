@@ -1,8 +1,9 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.kotlinpoet
 
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.MemberName
+import io.mockative.kontinuity.KONTINUITY_ANNOTATION
 
 internal fun KSAnnotation.getAnnotationSpec(): AnnotationSpec? {
     val type = annotationType.resolve()

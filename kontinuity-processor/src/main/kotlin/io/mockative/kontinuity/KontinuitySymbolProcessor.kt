@@ -7,6 +7,9 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
+import io.mockative.kontinuity.configuration.DefaultConfiguration
+import io.mockative.kontinuity.configuration.KSPArgumentConfiguration
+import io.mockative.kontinuity.configuration.SourceConfiguration
 import kotlin.time.measureTime
 
 class KontinuitySymbolProcessor(

@@ -1,8 +1,14 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.kotlinpoet
 
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.toTypeVariableName
+import io.mockative.kontinuity.*
+import io.mockative.kontinuity.ksp.*
+import io.mockative.kontinuity.ksp.implementsFlow
+import io.mockative.kontinuity.ksp.implementsStateFlow
+import io.mockative.kontinuity.ksp.implementsSuspend
+import io.mockative.kontinuity.ksp.implementsSuspendFlow
 
 internal fun ProcessableFunction.buildArgumentList(): String {
     return declaration.parameters.joinToString(", ") { parameter ->

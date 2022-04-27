@@ -3,6 +3,8 @@ package io.mockative.kontinuity
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import io.mockative.kontinuity.configuration.ClassConfiguration
+import io.mockative.kontinuity.configuration.MemberConfiguration
 
 data class ProcessableProperty(
     val declaration: KSPropertyDeclaration,

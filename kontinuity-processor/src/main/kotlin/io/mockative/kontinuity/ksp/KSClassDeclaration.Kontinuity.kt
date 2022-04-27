@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.ksp
 
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration

@@ -1,7 +1,8 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.kotlinpoet
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import io.mockative.kontinuity.*
 
 internal fun ProcessableProperty.buildPropertySpec(): PropertySpec {
     return when (type) {

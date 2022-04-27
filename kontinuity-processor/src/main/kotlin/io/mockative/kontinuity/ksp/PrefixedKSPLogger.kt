@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.ksp
 
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSNode

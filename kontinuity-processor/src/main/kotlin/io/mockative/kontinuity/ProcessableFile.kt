@@ -2,6 +2,7 @@ package io.mockative.kontinuity
 
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSFile
+import io.mockative.kontinuity.configuration.SourceConfiguration
 
 data class ProcessableFile(
     val declaration: KSFile,

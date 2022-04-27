@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.kotlinpoet
 
 import com.google.devtools.ksp.isLocal
 import com.google.devtools.ksp.symbol.KSDeclaration

@@ -1,7 +1,10 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.configuration
 
 import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import io.mockative.kontinuity.Kontinuity
+import io.mockative.kontinuity.KontinuityGeneration
+import io.mockative.kontinuity.ksp.ifUnspecified
 
 data class ClassConfiguration(
     val wrapper: String,

@@ -1,6 +1,10 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.kotlinpoet
 
 import com.squareup.kotlinpoet.*
+import io.mockative.kontinuity.*
+import io.mockative.kontinuity.ksp.addEmptyConstructor
+import io.mockative.kontinuity.ksp.addOriginatingKSFiles
+import io.mockative.kontinuity.ksp.getAllDependentFiles
 
 internal fun ProcessableType.buildWrapperTypeSpec(): TypeSpec {
     val wrappedPropertySpec = buildWrappedPropertySpec()

@@ -3,6 +3,9 @@ package io.mockative.kontinuity
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
+import io.mockative.kontinuity.configuration.ClassConfiguration
+import io.mockative.kontinuity.configuration.MemberConfiguration
+import io.mockative.kontinuity.ksp.isFromAny
 
 data class ProcessableFunction(
     val declaration: KSFunctionDeclaration,

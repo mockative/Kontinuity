@@ -1,4 +1,4 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.ksp
 
 import io.mockative.kontinuity.KontinuityGeneration
 

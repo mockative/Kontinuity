@@ -1,8 +1,12 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.configuration
 
 import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
+import io.mockative.kontinuity.KONTINUITY_CONFIGURATION_ANNOTATION
+import io.mockative.kontinuity.KontinuityConfiguration
+import io.mockative.kontinuity.KontinuityGeneration
+import io.mockative.kontinuity.ksp.ifUnspecified
 
 data class SourceConfiguration(
     val wrappers: String,
