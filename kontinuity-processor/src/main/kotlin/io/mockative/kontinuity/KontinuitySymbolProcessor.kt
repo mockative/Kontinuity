@@ -1,7 +1,7 @@
 package io.mockative.kontinuity
 
-import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
@@ -10,48 +10,27 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import kotlin.time.measureTime
 
 class KontinuitySymbolProcessor(
+    private val log: KSPLogger,
     private val codeGenerator: CodeGenerator,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
-
-    private var processed = false
-
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (processed) {
-            Log.debug("Skipped: Already Processed")
-            return emptyList()
-        }
-
         val duration = measureTime {
-            Log.info("Starting with options:\n$Options")
-
             // Default Configuration
             val defaultConfiguration = DefaultConfiguration()
-            Log.info("Default Configuration: $defaultConfiguration")
+            log.info("Default Configuration: $defaultConfiguration")
 
             // KSP Argument Configuration
-            val kspArgumentConfiguration = KSPArgumentConfiguration.fromOptions(options, defaultConfiguration)
-            Log.info("KSP Argument Configuration: $kspArgumentConfiguration")
+            val kspArgumentConfiguration = KSPArgumentConfiguration
+                .fromOptions(options, defaultConfiguration)
+
+            log.info("KSP Argument Configuration: $kspArgumentConfiguration")
 
             // Source Configuration
-            val sourceConfigurationClasses = resolver
-                .getSymbolsWithAnnotation(KONTINUITY_CONFIGURATION_ANNOTATION.canonicalName)
-                .toList()
+            val sourceConfiguration = SourceConfiguration
+                .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
 
-            if (sourceConfigurationClasses.size > 1) {
-                sourceConfigurationClasses.forEach {
-                    Log.error("@KontinuityConfiguration was found on multiple classes. Only one configuration attribute per source set is allowed.", it)
-                }
-
-                return emptyList()
-            }
-
-            val sourceConfigurationClassAnnotation = sourceConfigurationClasses
-                .flatMap { it.getAnnotationsByType(KontinuityConfiguration::class) }
-                .firstOrNull()
-
-            val sourceConfiguration = SourceConfiguration.fromAnnotation(sourceConfigurationClassAnnotation, kspArgumentConfiguration)
-            Log.info("Source Configuration: $sourceConfiguration")
+            log.info("Source Configuration: $sourceConfiguration")
 
             // Annotated Types
             val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration)
@@ -61,11 +40,9 @@ class KontinuitySymbolProcessor(
                     .build()
                     .writeTo(codeGenerator, aggregating = false)
             }
-
-            processed = true
         }
 
-        Log.info("Processing finished after $duration")
+        log.info("Processing finished after $duration")
 
         return emptyList()
     }

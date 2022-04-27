@@ -1,5 +1,9 @@
 package io.mockative.kontinuity
 
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+
 data class SourceConfiguration(
     val wrappers: String,
     val generation: KontinuityGeneration,
@@ -9,7 +13,7 @@ data class SourceConfiguration(
     val members: String,
 ) {
     companion object {
-        fun fromAnnotation(
+        private fun fromAnnotation(
             annotation: KontinuityConfiguration?,
             parentConfiguration: KSPArgumentConfiguration
         ): SourceConfiguration {
@@ -22,6 +26,26 @@ data class SourceConfiguration(
                 annotation?.flow?.ifEmpty { null } ?: parentConfiguration.flow,
                 annotation?.members?.ifEmpty { null } ?: parentConfiguration.members,
             )
+        }
+
+        fun fromResolver(resolver: Resolver, log: KSPLogger, parentConfiguration: KSPArgumentConfiguration): SourceConfiguration? {
+            val sourceConfigurationClasses = resolver
+                .getSymbolsWithAnnotation(KONTINUITY_CONFIGURATION_ANNOTATION.canonicalName)
+                .toList()
+
+            if (sourceConfigurationClasses.size > 1) {
+                sourceConfigurationClasses.forEach {
+                    log.error("@KontinuityConfiguration was found on multiple classes. Only one configuration attribute per source set is allowed.", it)
+                }
+
+                return null
+            }
+
+            val sourceConfigurationClassAnnotation = sourceConfigurationClasses
+                .flatMap { it.getAnnotationsByType(KontinuityConfiguration::class) }
+                .firstOrNull()
+
+            return fromAnnotation(sourceConfigurationClassAnnotation, parentConfiguration)
         }
     }
 }

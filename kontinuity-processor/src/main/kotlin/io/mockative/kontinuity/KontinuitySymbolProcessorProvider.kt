@@ -6,9 +6,9 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class KontinuitySymbolProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        Log.logger = environment.logger
-        Options.source = environment.options
-        return KontinuitySymbolProcessor(environment.codeGenerator, environment.options)
+        val logger = PrefixedKSPLogger(environment.logger)
+        val codeGenerator = environment.codeGenerator
+        val options = environment.options
+        return KontinuitySymbolProcessor(logger, codeGenerator, options)
     }
-
 }
