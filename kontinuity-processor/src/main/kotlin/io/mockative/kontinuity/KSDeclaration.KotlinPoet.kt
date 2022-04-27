@@ -1,4 +1,4 @@
-package io.mockative.kontinuity.generator
+package io.mockative.kontinuity
 
 import com.google.devtools.ksp.isLocal
 import com.google.devtools.ksp.symbol.KSDeclaration

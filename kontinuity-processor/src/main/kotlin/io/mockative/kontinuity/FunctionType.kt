@@ -7,13 +7,15 @@ import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 sealed interface FunctionType {
     data class Blocking(val returnType: ReturnType) : FunctionType
     data class Suspending(val returnType: ReturnType) : FunctionType
-}
 
-internal fun KSFunctionDeclaration.getFunctionType(typeParameterResolver: TypeParameterResolver): FunctionType {
-    val returnType = getReturnType(typeParameterResolver)
+    companion object {
+        internal fun fromDeclaration(declaration: KSFunctionDeclaration, typeParameterResolver: TypeParameterResolver): FunctionType {
+            val returnType = ReturnType.fromDeclaration(declaration, typeParameterResolver)
 
-    return when {
-        modifiers.contains(Modifier.SUSPEND) -> FunctionType.Suspending(returnType)
-        else -> FunctionType.Blocking(returnType)
+            return when {
+                declaration.modifiers.contains(Modifier.SUSPEND) -> Suspending(returnType)
+                else -> Blocking(returnType)
+            }
+        }
     }
 }

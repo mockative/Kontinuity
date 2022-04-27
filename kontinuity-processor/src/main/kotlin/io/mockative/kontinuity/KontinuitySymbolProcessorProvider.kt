@@ -8,7 +8,7 @@ class KontinuitySymbolProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         Log.logger = environment.logger
         Options.source = environment.options
-        return KontinuitySymbolProcessor(environment.codeGenerator)
+        return KontinuitySymbolProcessor(environment.codeGenerator, environment.options)
     }
 
 }

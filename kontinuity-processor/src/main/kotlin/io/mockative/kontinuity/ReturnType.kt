@@ -1,6 +1,7 @@
 package io.mockative.kontinuity
 
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeName
@@ -11,25 +12,27 @@ sealed interface ReturnType {
     data class Value(val type: TypeName) : ReturnType
     data class Flow(val elementType: TypeName) : ReturnType
     data class StateFlow(val elementType: TypeName) : ReturnType
-}
 
-internal fun KSTypeReference.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
-    val typeName = toTypeName(typeParameterResolver)
+    companion object {
+        internal fun fromDeclaration(declaration: KSPropertyDeclaration, typeParameterResolver: TypeParameterResolver): ReturnType {
+            return fromTypeReference(declaration.type, typeParameterResolver)
+        }
 
-    if (typeName is ParameterizedTypeName) {
-        when (typeName.rawType) {
-            STATE_FLOW -> {
-                return ReturnType.StateFlow(typeName.typeArguments[0])
+        internal fun fromDeclaration(declaration: KSFunctionDeclaration, typeParameterResolver: TypeParameterResolver): ReturnType {
+            return fromTypeReference(declaration.returnType!!, typeParameterResolver)
+        }
+
+        private fun fromTypeReference(typeReference: KSTypeReference, typeParameterResolver: TypeParameterResolver): ReturnType {
+            val typeName = typeReference.toTypeName(typeParameterResolver)
+
+            if (typeName is ParameterizedTypeName) {
+                when (typeName.rawType) {
+                    STATE_FLOW -> return StateFlow(typeName.typeArguments[0])
+                    FLOW, SHARED_FLOW -> return Flow(typeName.typeArguments[0])
+                }
             }
-            FLOW, SHARED_FLOW -> {
-                return ReturnType.Flow(typeName.typeArguments[0])
-            }
+
+            return Value(typeName)
         }
     }
-
-    return ReturnType.Value(typeName)
-}
-
-internal fun KSFunctionDeclaration.getReturnType(typeParameterResolver: TypeParameterResolver): ReturnType {
-    return returnType!!.getReturnType(typeParameterResolver)
 }

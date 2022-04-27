@@ -3,6 +3,6 @@ package com.app.sample
 import io.mockative.kontinuity.KontinuityConfiguration
 
 @KontinuityConfiguration(
-    className = "K%T"
+    wrappers = "K%T"
 )
 object KontinuityConfigurationDeclaration

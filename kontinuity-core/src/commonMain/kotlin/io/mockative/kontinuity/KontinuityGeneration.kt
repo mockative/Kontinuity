@@ -4,6 +4,8 @@ package io.mockative.kontinuity
  * Controls how a Kontinuity Wrapper is generated for the annotated class or interface.
  */
 enum class KontinuityGeneration {
+    UNSPECIFIED,
+
     /**
      * Disables generation of a Kontinuity Wrapper.
      */

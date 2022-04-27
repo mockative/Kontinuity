@@ -6,8 +6,6 @@ package io.mockative.kontinuity
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 annotation class KontinuityConfiguration(
-    val className: String = "",
-
     /**
      * Specifies the name of the generated Kontinuity Wrapper class, using the format specifier
      * `%T` as a placeholder for the name of the class or interface this annotation is applied to.
@@ -17,13 +15,19 @@ annotation class KontinuityConfiguration(
     /**
      * Controls how a Kontinuity Wrapper is generated for the annotated class or interface.
      */
-    val generation: KontinuityGeneration = KontinuityGeneration.OPT_OUT,
+    val generation: KontinuityGeneration = KontinuityGeneration.UNSPECIFIED,
 
     /**
      * Specifies the format used when generating members for `suspend` functions in a Kontinuity
      * Wrapper, using `%M` as a placeholder for the name of the member.
      */
     val suspend: String = "",
+
+    /**
+     * Specifies the format used when generating members for the `suspend` and `Flow` functions in
+     * a Kontinuity Wrapper, using `%M` as a placeholder for the name of the member.
+     */
+    val suspendFlow: String = "",
 
     /**
      * Specifies the format used when generating members for the `Flow` members in a Kontinuity

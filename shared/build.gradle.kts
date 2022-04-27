@@ -64,7 +64,9 @@ kotlin {
             dependsOn(androidAndroidTest)
         }
 
-        val iosMain by getting
+        val iosMain by getting {
+            kotlin.srcDir("build/generated/ksp/ios/iosMain/kotlin")
+        }
         val iosTest by getting
 
         val jsMain by getting
@@ -98,15 +100,16 @@ android {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", project(":kontinuity-processor"))
+//    add("kspCommonMainMetadata", project(":kontinuity-processor"))
+    add("kspIos", project(":kontinuity-processor"))
 }
 
 afterEvaluate {
-    tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>> {
-        if (name != "kspCommonMainKotlinMetadata") {
-            dependsOn("kspCommonMainKotlinMetadata")
-        }
-    }
+//    tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>> {
+//        if (name != "kspCommonMainKotlinMetadata") {
+//            dependsOn("kspCommonMainKotlinMetadata")
+//        }
+//    }
 }
 
 ksp {

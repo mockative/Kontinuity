@@ -11,20 +11,25 @@ annotation class Kontinuity(
      * Specifies the name of the generated Kontinuity Wrapper class, using the format specifier
      * `%T` as a placeholder for the name of the class or interface this annotation is applied to.
      */
-    val name: String = "",
-
-    val generate: Boolean = true,
+    val wrapper: String = "",
 
     /**
      * Controls how a Kontinuity Wrapper is generated for the annotated class or interface.
      */
-    val generation: KontinuityGeneration = KontinuityGeneration.OPT_OUT,
+    val generation: KontinuityGeneration = KontinuityGeneration.UNSPECIFIED,
 
     /**
      * Specifies the format used when generating members for `suspend` functions in the Kontinuity
      * Wrapper of the annotated type, using `%M` as a placeholder for the name of the member.
      */
     val suspend: String = "",
+
+    /**
+     * Specifies the format used when generating members for `suspend` and `Flow` functions in the
+     * Kontinuity Wrapper of the annotated type, using `%M` as a placeholder for the name of the
+     * member.
+     */
+    val suspendFlow: String = "",
 
     /**
      * Specifies the format used when generating members for the `Flow` members in the Kontinuity
