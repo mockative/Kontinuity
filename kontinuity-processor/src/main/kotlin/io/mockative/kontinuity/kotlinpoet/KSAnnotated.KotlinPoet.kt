@@ -5,6 +5,6 @@ import com.squareup.kotlinpoet.AnnotationSpec
 
 internal fun KSAnnotated.getAnnotationSpecs(): List<AnnotationSpec> {
     return annotations
-        .mapNotNull { it.getAnnotationSpec() }
+        .mapNotNull { it.toAnnotationSpec() }
         .toList()
 }

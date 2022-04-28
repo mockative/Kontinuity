@@ -18,7 +18,6 @@ internal fun ProcessableType.buildWrapperTypeSpec(): TypeSpec {
     return TypeSpec.classBuilder(wrapperClassName)
         .addModifiers(KModifier.OPEN)
         .addAnnotation(buildKontinuityGeneratedAnnotation())
-        .addAnnotations(declaration.getAnnotationSpecs())
         .addProperty(wrappedPropertySpec)
         .addEmptyConstructor()
         .addFunction(wrappingConstructor)

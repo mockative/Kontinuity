@@ -5,7 +5,7 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.MemberName
 import io.mockative.kontinuity.KONTINUITY_ANNOTATION
 
-internal fun KSAnnotation.getAnnotationSpec(): AnnotationSpec? {
+internal fun KSAnnotation.toAnnotationSpec(): AnnotationSpec? {
     val type = annotationType.resolve()
 
     val className = type.toClassName()!!
