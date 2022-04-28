@@ -42,3 +42,76 @@ public func createPublisher<Output, Failure: Error, Unit>(
         .flatMap { kontinuityFlow in createPublisher(for: kontinuityFlow) }
         .eraseToAnyPublisher()
 }
+
+extension Publisher {
+    func toKontinuityFlow() -> KontinuityFlow<Output, Failure, Any?> {
+        return { receiveValue, receiveCompletion in
+            let cancellable = self.sink { completion in
+                switch completion {
+                case .finished:
+                    _ = receiveCompletion(nil, nil)
+                case .failure(let error):
+                    _ = receiveCompletion(error, nil)
+                }
+            } receiveValue: { value in
+                _ = receiveValue(value, nil)
+            }
+            
+            // Cancellable
+            return {
+                cancellable.cancel()
+                return nil
+            }
+        }
+    }
+    
+    func toKontinuitySuspend() -> KontinuitySuspend<Output, Failure, Any?> {
+        return { receiveSuccess, receiveFailure in
+            let cancellable = self.first().sink { completion in
+                if case .failure(let error) = completion {
+                    _ = receiveFailure(error, nil)
+                }
+            } receiveValue: { value in
+                _ = receiveSuccess(value, nil)
+            }
+            
+            // Cancellable
+            return {
+                cancellable.cancel()
+                return nil
+            }
+        }
+    }
+}
+
+extension CurrentValueSubject {
+    func toKontinuityStateFlow() -> KontinuityStateFlow<Output, Failure, Any?> {
+        return { mode, getValue, receiveValue, receiveCompletion in
+            if mode == "receive" {
+                _ = getValue(self.value, nil)
+                
+                // Cancellable
+                return {
+                    return nil
+                }
+            } else {
+                let cancellable = self.sink { completion in
+                    switch completion {
+                    case .finished:
+                        _ = receiveCompletion(nil, nil)
+                    case .failure(let error):
+                        _ = receiveCompletion(error, nil)
+                    }
+                } receiveValue: { value in
+                    _ = receiveValue(value, nil)
+                }
+                
+                // Cancellable
+                return {
+                    cancellable.cancel()
+                    return nil
+                }
+            }
+        }
+    }
+}
