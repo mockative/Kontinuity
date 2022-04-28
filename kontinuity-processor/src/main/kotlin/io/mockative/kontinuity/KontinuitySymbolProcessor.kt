@@ -1,9 +1,6 @@
 package io.mockative.kontinuity
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
@@ -18,7 +15,14 @@ class KontinuitySymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
+
+    private var isProcessed = false
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        if (isProcessed) {
+            return emptyList()
+        }
+
         val duration = measureTime {
             // Default Configuration
             val defaultConfiguration = DefaultConfiguration()
@@ -48,69 +52,8 @@ class KontinuitySymbolProcessor(
 
         log.info("Processing finished after $duration")
 
+        isProcessed = true
+
         return emptyList()
     }
 }
-
-//internal fun CodeGenerator.addWrapperFile(sourceFile: SourceFile, classDecs: List<KSClassDeclaration>) {
-//    val wrapperFile = sourceFile.getWrapperFile()
-//    val dependentFiles = classDecs.getAllDependentFiles()
-//
-//    val packageName = sourceFile.packageName
-//    val fileName = wrapperFile.fileName
-//
-//    FileSpec.builder(packageName, fileName)
-//        .addWrapperTypes(classDecs)
-//        .build()
-//        .writeTo(this, false, dependentFiles)
-//}
-//
-//internal fun CodeGenerator.addFunctionsFile(sourceFile: SourceFile, classDecs: List<KSClassDeclaration>) {
-//    val packageName = "io.mockative.kontinuity"
-//    val fileName = "${sourceFile.packageName}.${sourceFile.fileName}.Kontinuity"
-//
-//    FileSpec.builder(packageName, fileName)
-//        .addGetKontinuityWrapperClassFunctions(classDecs)
-//        .addCreateKontinuityWrapperFunctions(classDecs)
-//        .build()
-//        .writeTo(this, false, listOf(sourceFile.file))
-//}
-//
-//internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunctions(classDecs: List<KSClassDeclaration>): FileSpec.Builder {
-//    return classDecs
-//        .mapNotNull { classDec -> classDec.getWrapperClass() }
-//        .fold(this) { fileSpec, wrapperClass ->
-//            fileSpec.addGetKontinuityWrapperClassFunction(wrapperClass.source, wrapperClass)
-//        }
-//}
-//
-//internal fun FileSpec.Builder.addGetKontinuityWrapperClassFunction(source: SourceClass, wrapper: WrapperClass): FileSpec.Builder {
-//    return addFunction(
-//        FunSpec.builder("getKontinuityWrapperClass")
-//            .receiver(KCLASS.parameterizedBy(source.className))
-//            .returns(KCLASS.parameterizedBy(wrapper.className))
-//            .addStatement("return %T::class", wrapper.className)
-//            .build()
-//    )
-//}
-//
-//internal fun FileSpec.Builder.addCreateKontinuityWrapperFunctions(classDecs: List<KSClassDeclaration>): FileSpec.Builder {
-//    return classDecs
-//        .mapNotNull { classDec -> classDec.getWrapperClass() }
-//        .fold(this) { fileSpec, wrapperClass ->
-//            fileSpec.addCreateKontinuityWrapperFunction(wrapperClass.source, wrapperClass)
-//        }
-//}
-//
-//internal fun FileSpec.Builder.addCreateKontinuityWrapperFunction(source: SourceClass, wrapper: WrapperClass): FileSpec.Builder {
-//    val parameterSpec = ParameterSpec.builder("wrapping", source.className)
-//        .build()
-//
-//    return addFunction(
-//        FunSpec.builder("createKontinuityWrapper")
-//            .addParameter(parameterSpec)
-//            .returns(wrapper.className)
-//            .addStatement("return %T(%N)", wrapper.className, parameterSpec)
-//            .build()
-//    )
-//}

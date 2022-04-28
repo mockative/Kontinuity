@@ -3,24 +3,24 @@ package io.mockative.kontinuity.ksp
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSNode
 
-class PrefixedKSPLogger(private val log: KSPLogger) : KSPLogger {
+class NoLogger : KSPLogger {
     override fun error(message: String, symbol: KSNode?) {
-        log.error("[Kontinuity] $message", symbol)
+        // Nothing
     }
 
     override fun exception(e: Throwable) {
-        log.exception(e)
+        // Nothing
     }
 
     override fun info(message: String, symbol: KSNode?) {
-        log.info("[Kontinuity] $message", symbol)
+        // Nothing
     }
 
     override fun logging(message: String, symbol: KSNode?) {
-        log.logging("[Kontinuity] $message", symbol)
+        // Nothing
     }
 
     override fun warn(message: String, symbol: KSNode?) {
-        log.warn("[Kontinuity] $message", symbol)
+        // Nothing
     }
 }

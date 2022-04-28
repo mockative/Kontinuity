@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -38,9 +37,6 @@ kotlin {
 
                 // Kontinuity
                 implementation(project(":kontinuity-core"))
-
-                // Koin
-                implementation("io.insert-koin:koin-core:3.1.6")
             }
 
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
@@ -59,9 +55,19 @@ kotlin {
             }
         }
 
+        // Suppresses warnings
+        val androidAndroidTestRelease by getting
+        val androidTestFixtures by getting
+        val androidTestFixturesDebug by getting { dependsOn(androidTestFixtures) }
+        val androidTestFixturesRelease by getting { dependsOn(androidTestFixtures) }
+
         val androidMain by getting
         val androidTest by getting {
+            // Suppresses warnings
             dependsOn(androidAndroidTest)
+            dependsOn(androidAndroidTestRelease)
+            dependsOn(androidTestFixturesDebug)
+            dependsOn(androidTestFixturesRelease)
         }
 
         val iosMain by getting {
@@ -69,7 +75,9 @@ kotlin {
         }
         val iosTest by getting
 
-        val jsMain by getting
+        val jsMain by getting {
+            kotlin.srcDir("build/generated/ksp/js/jsMain/kotlin")
+        }
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))
@@ -100,24 +108,6 @@ android {
 }
 
 dependencies {
-//    add("kspCommonMainMetadata", project(":kontinuity-processor"))
     add("kspIos", project(":kontinuity-processor"))
-}
-
-afterEvaluate {
-//    tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>> {
-//        if (name != "kspCommonMainKotlinMetadata") {
-//            dependsOn("kspCommonMainKotlinMetadata")
-//        }
-//    }
-}
-
-ksp {
-    arg("kontinuity.logging.level", "info")
-
-//    if (System.getenv("XCODE_VERSION_ACTUAL") != null) {
-//        arg("kontinuity.generator.interfaceName", "Native%s")
-//        arg("kontinuity.generator.wrapperClassName", "Native%sWrapper")
-//    }
-//    arg("kontinuity.generator.memberName", "kontinuity%s")
+    add("kspJs", project(":kontinuity-processor"))
 }
