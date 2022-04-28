@@ -7,21 +7,39 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+println("os.arch: ${System.getProperty("os.arch")}")
+
 kotlin {
+    // JS
     js {
         browser()
         nodejs()
     }
 
+    // Android
     android()
 
+    // iOS
     val iosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
         System.getenv("SDK_NAME")?.startsWith("iphoneos") == true -> ::iosArm64
-        System.getenv("NATIVE_ARCH")?.startsWith("arm") == true -> ::iosSimulatorArm64
-        else -> ::iosSimulatorArm64
+        System.getProperty("os.arch") == "aarch64" -> ::iosSimulatorArm64
+        else -> ::iosX64
     }
 
     iosTarget("ios") {
+        binaries {
+            framework {
+                baseName = "shared"
+            }
+        }
+    }
+
+    val macosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
+        System.getenv("ARCHS") == "arm64" -> ::macosArm64
+        else -> ::macosX64
+    }
+
+    macosTarget("macos") {
         binaries {
             framework {
                 baseName = "shared"
@@ -83,6 +101,11 @@ kotlin {
                 implementation(kotlin("test-js"))
             }
         }
+
+        val macosMain by getting {
+            kotlin.srcDir("build/generated/ksp/macos/macosMain/kotlin")
+        }
+        val macosTest by getting
     }
 }
 
@@ -108,6 +131,7 @@ android {
 }
 
 dependencies {
+    add("kspMacos", project(":kontinuity-processor"))
     add("kspIos", project(":kontinuity-processor"))
     add("kspJs", project(":kontinuity-processor"))
 }
