@@ -1,7 +1,9 @@
 package io.mockative.kontinuity.kotlinpoet
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
 import io.mockative.kontinuity.*
 
 internal fun ProcessableProperty.buildPropertySpec(): PropertySpec {
@@ -45,9 +47,16 @@ internal fun ProcessableProperty.buildNonFlowPropertySpec(
 internal fun ProcessableProperty.buildFlowPropertySpec(
     elementType: TypeName
 ): PropertySpec {
-    val getter = FunSpec.getterBuilder()
-        .addStatement("return wrapped.$sourceMemberName.%M()", TO_KONTINUITY_FLOW_FUNCTION)
-        .build()
+    val builder = FunSpec.getterBuilder()
+
+    if (scopeDeclaration != null) {
+        val scopeMember = scopeDeclaration.toMemberName()
+        builder.addStatement("return wrapped.$sourceMemberName.%M(%M)", TO_KONTINUITY_FLOW_FUNCTION, scopeMember)
+    } else {
+        builder.addStatement("return wrapped.$sourceMemberName.%M()", TO_KONTINUITY_FLOW_FUNCTION)
+    }
+
+    val getter = builder.build()
 
     val type = KONTINUITY_FLOW.parameterizedBy(elementType)
 
@@ -59,9 +68,16 @@ internal fun ProcessableProperty.buildFlowPropertySpec(
 internal fun ProcessableProperty.buildStateFlowPropertySpec(
     elementType: TypeName
 ): PropertySpec {
-    val getter = FunSpec.getterBuilder()
-        .addStatement("return wrapped.$sourceMemberName.%M()", TO_KONTINUITY_STATE_FLOW_FUNCTION)
-        .build()
+    val builder = FunSpec.getterBuilder()
+
+    if (scopeDeclaration != null) {
+        val scopeMember = scopeDeclaration.toMemberName()
+        builder.addStatement("return wrapped.$sourceMemberName.%M(%M)", TO_KONTINUITY_STATE_FLOW_FUNCTION, scopeMember)
+    } else {
+        builder.addStatement("return wrapped.$sourceMemberName.%M()", TO_KONTINUITY_STATE_FLOW_FUNCTION)
+    }
+
+    val getter = builder.build()
 
     val type = KONTINUITY_STATE_FLOW.parameterizedBy(elementType)
 

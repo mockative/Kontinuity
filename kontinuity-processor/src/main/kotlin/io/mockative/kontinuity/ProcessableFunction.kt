@@ -1,6 +1,7 @@
 package io.mockative.kontinuity
 
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.ksp.TypeParameterResolver
 import com.squareup.kotlinpoet.ksp.toTypeParameterResolver
 import io.mockative.kontinuity.configuration.ClassConfiguration
@@ -13,13 +14,15 @@ data class ProcessableFunction(
     val wrapperMemberName: String,
     val functionType: FunctionType,
     val override: Boolean,
-    val typeParameterResolver: TypeParameterResolver
+    val typeParameterResolver: TypeParameterResolver,
+    val scopeDeclaration: KSPropertyDeclaration?,
 ) {
     companion object {
         fun fromDeclaration(
             declaration: KSFunctionDeclaration,
             parentConfiguration: ClassConfiguration,
-            parentTypeParameterResolver: TypeParameterResolver
+            parentTypeParameterResolver: TypeParameterResolver,
+            scopeDeclaration: KSPropertyDeclaration?,
         ): ProcessableFunction? {
             val typeParameterResolver = declaration.typeParameters
                 .toTypeParameterResolver(parentTypeParameterResolver)
@@ -47,6 +50,7 @@ data class ProcessableFunction(
                     functionType,
                     override,
                     typeParameterResolver,
+                    scopeDeclaration,
                 )
             }
         }

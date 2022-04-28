@@ -9,6 +9,7 @@ val KCLASS = ClassName("kotlin.reflect", "KClass")
 val KONTINUITY_ANNOTATION = Kontinuity::class.asClassName()
 val KONTINUITY_CONFIGURATION_ANNOTATION = KontinuityConfiguration::class.asClassName()
 val KONTINUITY_GENERATED_ANNOTATION = KontinuityGenerated::class.asClassName()
+val KONTINUITY_SCOPE_ANNOTATION = KontinuityScope::class.asClassName()
 
 val FLOW = ClassName("kotlinx.coroutines.flow", "Flow")
 val STATE_FLOW = ClassName("kotlinx.coroutines.flow", "StateFlow")

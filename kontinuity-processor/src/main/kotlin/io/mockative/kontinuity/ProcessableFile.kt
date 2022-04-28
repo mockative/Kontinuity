@@ -2,6 +2,7 @@ package io.mockative.kontinuity
 
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSFile
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import io.mockative.kontinuity.configuration.SourceConfiguration
 
 data class ProcessableFile(
@@ -13,7 +14,7 @@ data class ProcessableFile(
     companion object {
         fun fromResolver(
             resolver: Resolver,
-            parentConfiguration: SourceConfiguration
+            parentConfiguration: SourceConfiguration,
         ): List<ProcessableFile> {
             return ProcessableType.fromResolver(resolver, parentConfiguration)
                 .groupBy { it.declaration.containingFile!! }

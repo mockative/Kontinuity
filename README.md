@@ -127,12 +127,39 @@ iOS/Darwin, which it does to prevent member signature clashes when interfaces ar
 See [Configuration - Name Transformations](CONFIGURATION.md#name-transformations) for more 
 information in how to configure Kontinuity.
 
+### Coroutine Scope
+
+By default, Kontinuity launches all coroutines in a scope using `Dispatchers.Main.immediate`. You 
+can override this behaviour by annotating a top-level property with `@KontinuityScope`. This 
+annotation can both be applied to the entire source set (by specifying `default = true`), or to the 
+`@Kontinuity` annotated types within a single source file:
+
+```kotlin
+// Specifies the coroutine scope used to launch Kontinuity coroutines of types within this source 
+// set(s), unless otherwise overwritten by a file-level @KontinuityScope.
+@SharedImmutable
+@KontinuityScope(default = true)
+internal val defaultKontinuityScope = CoroutineScope(Dispatchers.Default + SuperviserJob())
+```
+
+```kotlin
+// Specifies the coroutine scope used to launch Kontinuity coroutines of types within this file.
+@SharedImmutable
+@KontinuityScope
+internal val taskServiceScope = CoroutineScope(Dispatchers.Unconfined + SuperviserJob())
+
+interface TaskService {
+    // Coroutines launches within this type (and other types in this file) are launched in the 
+    // `taskServiceScope`.
+}
+```
+
 ## Roadmap
 
-- [ ] Add global `@KontinuityScope` annotation to control the default scope through a
-  `@SharedImmutable` global variable.
-- [ ] Add type-local `@KontinuityScope` annotation to control the default scope on a per-type basis.
 - [ ] Add Swift mock library and generator
+- [X] Add global `@KontinuityScope` annotation to control the default scope through a
+  `@SharedImmutable` global variable.
+- [X] Add type-local `@KontinuityScope` annotation to control the default scope on a per-type basis.
 - [X] ~~Consider rewriting `SharedFlow<T>` wrapper generation to generating 2 properties, one for the 
   flow, one for the value `%MValue`.~~
     - Implementing this breaks usage of `suspend` functions returning `StateFlow<T>`. 

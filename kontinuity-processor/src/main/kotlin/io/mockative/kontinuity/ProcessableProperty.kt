@@ -12,12 +12,14 @@ data class ProcessableProperty(
     val wrapperMemberName: String,
     val type: ReturnType,
     val isMutable: Boolean,
+    val scopeDeclaration: KSPropertyDeclaration?,
 ) {
     companion object {
         fun fromDeclaration(
             declaration: KSPropertyDeclaration,
             parentConfiguration: ClassConfiguration,
-            parentTypeParameterResolver: TypeParameterResolver
+            parentTypeParameterResolver: TypeParameterResolver,
+            scopeDeclaration: KSPropertyDeclaration?,
         ): ProcessableProperty? {
             val typeParameterResolver = declaration.typeParameters
                 .toTypeParameterResolver(parentTypeParameterResolver)
@@ -42,7 +44,8 @@ data class ProcessableProperty(
                     sourceMemberName,
                     wrapperMemberName,
                     returnType,
-                    declaration.isMutable
+                    declaration.isMutable,
+                    scopeDeclaration,
                 )
             }
         }

@@ -34,22 +34,22 @@ internal fun ProcessableFunction.buildFunSpec(): FunSpec {
                 .addStatement("return wrapped.$sourceMemberName($arguments)")
                 .build()
             is ReturnType.Flow -> builder
-                .implementsFlow(returnType.elementType, sourceMemberName, arguments)
+                .implementsFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             is ReturnType.StateFlow -> builder
-                .implementsStateFlow(returnType.elementType, sourceMemberName, arguments)
+                .implementsStateFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }
         is FunctionType.Suspending -> when (val returnType = functionType.returnType) {
             is ReturnType.Value -> builder
-                .implementsSuspend(returnType.type, sourceMemberName, arguments)
+                .implementsSuspend(returnType.type, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             is ReturnType.Flow -> builder
-                .implementsSuspendFlow(returnType.elementType, sourceMemberName, arguments)
+                .implementsSuspendFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             is ReturnType.StateFlow -> builder
-                .implementsSuspendStateFlow(returnType.elementType, sourceMemberName, arguments)
+                .implementsSuspendStateFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
         }

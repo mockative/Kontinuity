@@ -1,5 +1,6 @@
 package io.mockative.kontinuity
 
+import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.squareup.kotlinpoet.FileSpec
@@ -7,6 +8,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import io.mockative.kontinuity.configuration.DefaultConfiguration
 import io.mockative.kontinuity.configuration.KSPArgumentConfiguration
 import io.mockative.kontinuity.configuration.SourceConfiguration
+import io.mockative.kontinuity.kotlinpoet.toMemberName
 import io.mockative.kontinuity.ksp.addWrapperTypes
 import kotlin.time.measureTime
 
@@ -39,6 +41,11 @@ class KontinuitySymbolProcessor(
                 .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
 
             log.info("Source Configuration: $sourceConfiguration")
+
+            val defaultScopeDeclaration = resolver.getSymbolsWithAnnotation(KONTINUITY_SCOPE_ANNOTATION.canonicalName)
+                .filter { it.getAnnotationsByType(KontinuityScope::class).first().default }
+                .joinToString { it.toString() }
+            log.warn("Default Scope: ${defaultScopeDeclaration}")
 
             // Annotated Types
             val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration)
