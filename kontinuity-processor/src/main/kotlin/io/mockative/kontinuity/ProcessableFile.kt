@@ -15,8 +15,9 @@ data class ProcessableFile(
         fun fromResolver(
             resolver: Resolver,
             parentConfiguration: SourceConfiguration,
+            defaultScopeDeclaration: KSPropertyDeclaration?,
         ): List<ProcessableFile> {
-            return ProcessableType.fromResolver(resolver, parentConfiguration)
+            return ProcessableType.fromResolver(resolver, parentConfiguration, defaultScopeDeclaration)
                 .groupBy { it.declaration.containingFile!! }
                 .map { (file, types) ->
                     ProcessableFile(

@@ -1,14 +1,15 @@
 package io.mockative.kontinuity
 
-import com.google.devtools.ksp.getAnnotationsByType
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 import io.mockative.kontinuity.configuration.DefaultConfiguration
 import io.mockative.kontinuity.configuration.KSPArgumentConfiguration
 import io.mockative.kontinuity.configuration.SourceConfiguration
-import io.mockative.kontinuity.kotlinpoet.toMemberName
 import io.mockative.kontinuity.ksp.addWrapperTypes
 import kotlin.time.measureTime
 
@@ -42,13 +43,12 @@ class KontinuitySymbolProcessor(
 
             log.info("Source Configuration: $sourceConfiguration")
 
-            val defaultScopeDeclaration = resolver.getSymbolsWithAnnotation(KONTINUITY_SCOPE_ANNOTATION.canonicalName)
-                .filter { it.getAnnotationsByType(KontinuityScope::class).first().default }
-                .joinToString { it.toString() }
-            log.warn("Default Scope: ${defaultScopeDeclaration}")
+            // Default Scope Declaration
+            val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
+            log.warn("Default Scope: $defaultScopeDeclaration")
 
             // Annotated Types
-            val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration)
+            val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration, defaultScopeDeclaration)
             processableFiles.forEach { file ->
                 FileSpec.builder(file.packageName, "${file.fileName.removeSuffix(".kt")}.Kontinuity")
                     .addWrapperTypes(file.types)

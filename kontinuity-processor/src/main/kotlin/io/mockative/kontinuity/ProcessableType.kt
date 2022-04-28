@@ -113,10 +113,8 @@ data class ProcessableType(
         fun fromResolver(
             resolver: Resolver,
             parentConfiguration: SourceConfiguration,
+            defaultScopeDeclaration: KSPropertyDeclaration?,
         ): Sequence<ProcessableType> {
-            // Default Scope Declaration
-            val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
-
             return resolver
                 .getSymbolsWithAnnotation(KONTINUITY_ANNOTATION.canonicalName)
                 .mapNotNull { it as? KSClassDeclaration }
