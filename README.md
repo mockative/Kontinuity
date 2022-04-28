@@ -133,8 +133,9 @@ information in how to configure Kontinuity.
   `@SharedImmutable` global variable.
 - [ ] Add type-local `@KontinuityScope` annotation to control the default scope on a per-type basis.
 - [ ] Add Swift mock library and generator
-- [ ] Consider rewriting `SharedFlow<T>` wrapper generation to generating 2 properties, one for the 
-  flow, one for the value `%MValue`.
+- [X] ~~Consider rewriting `SharedFlow<T>` wrapper generation to generating 2 properties, one for the 
+  flow, one for the value `%MValue`.~~
+    - Implementing this breaks usage of `suspend` functions returning `StateFlow<T>`. 
 
 ## Credits
 
