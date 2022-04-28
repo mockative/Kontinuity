@@ -1,6 +1,7 @@
-package io.mockative.kontinuity
+package io.mockative.kontinuity.ksp
 
 import com.squareup.kotlinpoet.FileSpec
+import io.mockative.kontinuity.ProcessableType
 import io.mockative.kontinuity.kotlinpoet.buildWrapperTypeSpec
 
 fun FileSpec.Builder.addWrapperTypes(types: List<ProcessableType>): FileSpec.Builder {
