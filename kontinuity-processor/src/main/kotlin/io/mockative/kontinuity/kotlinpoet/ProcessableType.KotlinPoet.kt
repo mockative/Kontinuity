@@ -17,7 +17,7 @@ internal fun ProcessableType.buildWrapperTypeSpec(): TypeSpec {
 
     return TypeSpec.classBuilder(wrapperClassName)
         .addModifiers(KModifier.OPEN)
-        .addAnnotation(KONTINUITY_GENERATED_ANNOTATION)
+        .addAnnotation(buildKontinuityGeneratedAnnotation())
         .addAnnotations(declaration.getAnnotationSpecs())
         .addProperty(wrappedPropertySpec)
         .addEmptyConstructor()
@@ -26,6 +26,12 @@ internal fun ProcessableType.buildWrapperTypeSpec(): TypeSpec {
         .addFunctions(functions)
         .addKdoc(declaration.docString?.trim() ?: "")
         .addOriginatingKSFiles(dependentFiles)
+        .build()
+}
+
+internal fun ProcessableType.buildKontinuityGeneratedAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(KONTINUITY_GENERATED_ANNOTATION)
+        .addMember("%T::class", sourceClassName)
         .build()
 }
 
