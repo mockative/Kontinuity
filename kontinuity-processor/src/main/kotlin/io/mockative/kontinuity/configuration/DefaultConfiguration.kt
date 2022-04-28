@@ -9,5 +9,5 @@ data class DefaultConfiguration(
     val suspend: String = "%MK",
     val suspendFlow: String = "%MK",
     val flow: String = "%MK",
-    val members: String = "%MK",
+    val members: String = "%M",
 )
