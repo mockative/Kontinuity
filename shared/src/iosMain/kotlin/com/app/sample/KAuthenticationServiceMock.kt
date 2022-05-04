@@ -5,54 +5,32 @@ import io.mockative.kontinuity.internal.KontinuityStateFlow
 import io.mockative.kontinuity.internal.KontinuitySuspend
 
 class KAuthenticationServiceMock : KAuthenticationService() {
-    fun expect(times: Int) = Expectations()
+    fun expectGet(times: Int) = GetterExpectations(times)
+    fun expectSet(times: Int) = SetterExpectations(times)
 
-    class Expectations {
-        val stateFlowK_get: StateFlowStub.Builder<String?>
-            get() = StateFlowStub.Builder()
+    fun expectInvocation(times: Int) = FunctionExpectations(times)
 
-        fun loginK(request: AuthenticationRequest?): SuspendStub.Builder<AuthenticationResponse> {
-            return SuspendStub.Builder()
-        }
-
-        fun getFlowsAsyncK(request: AuthenticationRequest): Suspend
+    class SetterExpectations(private val times: Int) {
+        fun unrelatedProperty(block: (String, Unit) -> Unit): Any? = TODO()
     }
-}
 
-class StateFlowStub<R> {
-    class Builder<R> {
-        fun andReturn(value: KontinuityStateFlow<R>) {
-            TODO()
-        }
+    class GetterExpectations(private val times: Int) {
+        fun unrelatedProperty(block: (Unit) -> String): Any? = TODO()
+
+        fun stateFlowK(block: KontinuityStateFlow<String?>): Any? = TODO()
     }
-}
 
-class SuspendStub<R> {
-    class Builder<R> {
-        fun andReturn(value: R) {
-            TODO()
-        }
+    class FunctionExpectations(private val times: Int) {
+        fun loginK(request: AuthenticationRequest?, block: KontinuitySuspend<AuthenticationResponse>): Any? = TODO()
 
-        fun andInvoke(block: KontinuitySuspend<R>) {
-            TODO()
-        }
+        fun getFlowsAsyncK(request: AuthenticationRequest, implementation: KontinuitySuspend<KontinuityFlow<List<AuthenticationResponse>>>): Any? = TODO()
     }
-}
-
-class SuspendFlowStub<R> {
-    class Builder<R> {
-        fun andReturn(value: R)
-    }
-}
-
-fun <T> createSuspend(value: T): KontinuitySuspend<T> {
-    TODO()
 }
 
 fun foo() {
     val mock = KAuthenticationServiceMock()
-    mock.expect(times = 1).stateFlowK_get.andReturn(value = { _, _, _, _ -> TODO() })
-    mock.expect(times = 1).stateFlowK_get.andInvoke { createStateFlow("foo") }
+    mock.expectGet(times = 1).stateFlowK { _, _, _, _ -> TODO() }
+    mock.expectSet(times = 1).unrelatedProperty { value, unit -> TODO() }
 
-    mock.expect(times = 1).loginK(AuthenticationRequest(code = "code")).andInvoke { { _, _ -> TODO() } }
+    mock.expectInvocation(times = 1).loginK(AuthenticationRequest(code = "code")) { _, _ -> TODO() }
 }
