@@ -9,4 +9,4 @@ import kotlin.native.concurrent.SharedImmutable
  * The default [CoroutineScope] used if no specific scope is provided.
  */
 @SharedImmutable
-internal val defaultCoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+internal val defaultCoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
