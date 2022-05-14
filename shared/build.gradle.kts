@@ -7,8 +7,6 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-println("os.arch: ${System.getProperty("os.arch")}")
-
 kotlin {
     // JS
     js {

@@ -12,7 +12,7 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             dependencies {
-                // Krouton
+                // Kontinuity
                 implementation(project(":kontinuity-core"))
 
                 // KSP

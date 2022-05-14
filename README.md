@@ -91,8 +91,7 @@ open class KTaskService(private val wrapped: TaskService) {
 
 ### Swift
 
-The generated Kontinuity Wrapper can be used in Swift through `KontinuityCore` and one or more of 
-`KontinuityCombine`, `KontinuityAsync` or `KontinuityRxSwift`.
+The generated Kontinuity Wrapper can be used in Swift through `KontinuityCore` and `KontinuityCombine`.
 
 ```swift
 import KontinuityCore
