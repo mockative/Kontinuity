@@ -1,6 +1,7 @@
 package io.mockative.kontinuity.kotlinpoet
 
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
@@ -38,6 +39,7 @@ internal fun ProcessableProperty.buildNonFlowPropertySpec(
     }
 
     return PropertySpec.builder(wrapperMemberName, type)
+        .addModifiers(KModifier.OPEN)
         .mutable(isMutable)
         .getter(getter)
         .setter(setter)
@@ -61,6 +63,7 @@ internal fun ProcessableProperty.buildFlowPropertySpec(
     val type = KONTINUITY_FLOW.parameterizedBy(elementType)
 
     return PropertySpec.builder(wrapperMemberName, type)
+        .addModifiers(KModifier.OPEN)
         .getter(getter)
         .build()
 }
@@ -82,6 +85,7 @@ internal fun ProcessableProperty.buildStateFlowPropertySpec(
     val type = KONTINUITY_STATE_FLOW.parameterizedBy(elementType)
 
     return PropertySpec.builder(wrapperMemberName, type)
+        .addModifiers(KModifier.OPEN)
         .getter(getter)
         .build()
 }

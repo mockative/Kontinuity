@@ -20,7 +20,7 @@ internal fun ProcessableFunction.buildFunSpec(): FunSpec {
     val memberName = if (override) sourceMemberName else wrapperMemberName
 
     val builder = FunSpec.builder(memberName)
-        .addModifiers(if (override) listOf(KModifier.OVERRIDE) else emptyList())
+        .addModifiers(if (override) listOf(KModifier.OVERRIDE) else listOf(KModifier.OPEN))
         .addTypeVariables(buildTypeParameterSpecs())
         .addParameters(buildParameterSpecs())
         .addAnnotations(buildThrowsAnnotationSpecs())
