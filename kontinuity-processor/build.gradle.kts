@@ -16,7 +16,7 @@ kotlin {
                 implementation(project(":kontinuity-core"))
 
                 // KSP
-                implementation("com.google.devtools.ksp:symbol-processing-api:1.6.20-1.0.5")
+                implementation("com.google.devtools.ksp:symbol-processing-api:1.7.0-RC-1.0.5")
 
                 // KotlinPoet
                 implementation("com.squareup:kotlinpoet:1.10.2")
