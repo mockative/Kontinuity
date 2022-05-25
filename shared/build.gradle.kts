@@ -61,6 +61,8 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
+
+                implementation("io.mockative:mockative:1.2.1")
             }
         }
 
@@ -73,17 +75,12 @@ kotlin {
 
         // Suppresses warnings
         val androidAndroidTestRelease by getting
-        val androidTestFixtures by getting
-        val androidTestFixturesDebug by getting { dependsOn(androidTestFixtures) }
-        val androidTestFixturesRelease by getting { dependsOn(androidTestFixtures) }
 
         val androidMain by getting
         val androidTest by getting {
             // Suppresses warnings
             dependsOn(androidAndroidTest)
             dependsOn(androidAndroidTestRelease)
-            dependsOn(androidTestFixturesDebug)
-            dependsOn(androidTestFixturesRelease)
         }
 
         val iosMain by getting {
@@ -105,6 +102,14 @@ kotlin {
         }
         val macosTest by getting
     }
+}
+
+dependencies {
+    configurations
+        .filter { it.name.startsWith("ksp") && it.name.contains("Test") }
+        .forEach {
+            add(it.name, "io.mockative:mockative-processor:1.2.1")
+        }
 }
 
 android {

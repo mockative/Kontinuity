@@ -26,38 +26,41 @@ class KontinuitySymbolProcessor(
             return emptyList()
         }
 
-        val duration = measureTime {
-            // Default Configuration
-            val defaultConfiguration = DefaultConfiguration()
-            log.info("Default Configuration: $defaultConfiguration")
+        val startTime = System.currentTimeMillis()
 
-            // KSP Argument Configuration
-            val kspArgumentConfiguration = KSPArgumentConfiguration
-                .fromOptions(options, defaultConfiguration)
+        // Default Configuration
+        val defaultConfiguration = DefaultConfiguration()
+        log.info("Default Configuration: $defaultConfiguration")
 
-            log.info("KSP Argument Configuration: $kspArgumentConfiguration")
+        // KSP Argument Configuration
+        val kspArgumentConfiguration = KSPArgumentConfiguration
+            .fromOptions(options, defaultConfiguration)
 
-            // Source Configuration
-            val sourceConfiguration = SourceConfiguration
-                .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
+        log.info("KSP Argument Configuration: $kspArgumentConfiguration")
 
-            log.info("Source Configuration: $sourceConfiguration")
+        // Source Configuration
+        val sourceConfiguration = SourceConfiguration
+            .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
 
-            // Default Scope Declaration
-            val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
-            log.warn("Default Scope: $defaultScopeDeclaration")
+        log.info("Source Configuration: $sourceConfiguration")
 
-            // Annotated Types
-            val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration, defaultScopeDeclaration)
-            processableFiles.forEach { file ->
-                FileSpec.builder(file.packageName, "${file.fileName.removeSuffix(".kt")}.Kontinuity")
-                    .addWrapperTypes(file.types)
-                    .build()
-                    .writeTo(codeGenerator, aggregating = false)
-            }
+        // Default Scope Declaration
+        val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
+        log.warn("Default Scope: $defaultScopeDeclaration")
+
+        // Annotated Types
+        val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration, defaultScopeDeclaration)
+        processableFiles.forEach { file ->
+            FileSpec.builder(file.packageName, "${file.fileName.removeSuffix(".kt")}.Kontinuity")
+                .addWrapperTypes(file.types)
+                .build()
+                .writeTo(codeGenerator, aggregating = false)
         }
 
-        log.info("Processing finished after $duration")
+        val endTime = System.currentTimeMillis()
+
+        val duration = (endTime - startTime).toDouble() / 1000.0
+        log.info("Processing finished after ${String.format("%.2f", duration)}")
 
         isProcessed = true
 
