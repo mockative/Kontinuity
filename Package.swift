@@ -12,6 +12,10 @@ let package = Package(
         .library(
             name: "KontinuityCombine",
             targets: ["KontinuityCombine"]
+        ),
+        .library(
+            name: "KontinuityAsync",
+            targets: ["KontinuityAsync"]
         )
     ],
     targets: [
@@ -28,6 +32,16 @@ let package = Package(
             name: "KontinuityCombineTests",
             dependencies: ["KontinuityCombine"],
             path: "KontinuityCombineTests"
+        ),
+        .target(
+            name: "KontinuityAsync",
+            dependencies: ["KontinuityCore"],
+            path: "KontinuityAsync"
+        ),
+        .testTarget(
+            name: "KontinuityAsyncTests",
+            dependencies: ["KontinuityAsync"],
+            path: "KontinuityAsyncTests"
         )
     ]
 )
