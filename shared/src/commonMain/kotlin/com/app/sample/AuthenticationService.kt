@@ -33,7 +33,7 @@ interface AuthenticationService : RefreshableService {
     // Kontinuity
     //
 
-    @Throws(Throwable::class, Exception::class)
+//    @Throws(Throwable::class, Exception::class)
     fun isBiometricAuthAvailable(): Boolean
 
     suspend fun login(request: AuthenticationRequest?): AuthenticationResponse

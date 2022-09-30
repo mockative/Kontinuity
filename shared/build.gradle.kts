@@ -73,14 +73,9 @@ kotlin {
             }
         }
 
-        // Suppresses warnings
-        val androidAndroidTestRelease by getting
-
         val androidMain by getting
         val androidTest by getting {
-            // Suppresses warnings
             dependsOn(androidAndroidTest)
-            dependsOn(androidAndroidTestRelease)
         }
 
         val iosMain by getting {
