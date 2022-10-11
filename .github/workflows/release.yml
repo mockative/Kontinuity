@@ -24,7 +24,7 @@ jobs:
           password: ${{ secrets.SONATYPE_PASSWORD }}
           staging_profile_id: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
           base_url: ${{ env.SONATYPE_BASE_URL }}
-          description: Created by Release (Create staging repository) for mockative/mockative
+          description: Created by Release (Create staging repository) for mockative/Kontinuity
 
   publish-on-macos:
     runs-on: macos-12
@@ -54,9 +54,6 @@ jobs:
 
       - name: Initialize Gradle
         run: ./gradlew
-
-      - name: Run code generator
-        run: ./gradlew :mockative-code-generator:run
 
       - name: Publish
         shell: bash

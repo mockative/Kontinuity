@@ -2,7 +2,7 @@
 
 [ksp]: https://github.com/google/ksp
 
-[![Build](https://github.com/mockative/mockative/actions/workflows/build.yml/badge.svg)](https://github.com/mockative/mockative/actions/workflows/build.yml)
+[![Build](https://github.com/mockative/Kontinuity/actions/workflows/build.yml/badge.svg)](https://github.com/mockative/Kontinuity/actions/workflows/build.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.mockative/kontinuity-processor)](https://search.maven.org/artifact/io.mockative/kontinuity-processor)
 
 Effortless use of Kotlin Multiplatform coroutines in Swift, including `suspend` functions and
