@@ -9,7 +9,7 @@ actual typealias KontinuityError = NSError
 @OptIn(UnsafeNumber::class)
 internal actual fun Throwable.asKontinuityError(): KontinuityError {
     val userInfo = mutableMapOf<Any?, Any>()
-    userInfo["KotlinException"] = this.freeze()
+    userInfo["KotlinException"] = this
 
     val message = message
     if (message != null) {

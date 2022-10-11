@@ -30,5 +30,5 @@ fun <T> StateFlow<T>.toKontinuityStateFlow(scope: CoroutineScope? = null): Konti
         }
     }
 
-    return stateFlow.freeze()
+    return stateFlow
 }

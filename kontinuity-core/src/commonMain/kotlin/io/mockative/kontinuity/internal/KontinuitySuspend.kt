@@ -43,5 +43,5 @@ fun <T> kontinuitySuspend(scope: CoroutineScope? = null, block: suspend () -> T)
         job.asNativeCancellable()
     }
 
-    return suspend.freeze()
+    return suspend
 }
