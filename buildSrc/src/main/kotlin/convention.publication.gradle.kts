@@ -6,7 +6,7 @@ plugins {
 }
 
 val props = Properties().apply {
-    // Load `gradle.properties`, environment variables and command-line arguments
+    // Load `local.properties`, environment variables and command-line arguments
     project.properties.forEach { (key, value) ->
         if (value != null) {
             this[key] = value

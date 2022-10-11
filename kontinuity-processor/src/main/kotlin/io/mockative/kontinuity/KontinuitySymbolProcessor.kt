@@ -11,7 +11,6 @@ import io.mockative.kontinuity.configuration.DefaultConfiguration
 import io.mockative.kontinuity.configuration.KSPArgumentConfiguration
 import io.mockative.kontinuity.configuration.SourceConfiguration
 import io.mockative.kontinuity.ksp.addWrapperTypes
-import kotlin.time.measureTime
 
 class KontinuitySymbolProcessor(
     private val log: KSPLogger,
