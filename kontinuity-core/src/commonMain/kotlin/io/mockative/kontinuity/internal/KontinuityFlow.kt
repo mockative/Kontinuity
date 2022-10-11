@@ -47,5 +47,5 @@ fun <T> Flow<T>.toKontinuityFlow(scope: CoroutineScope? = null): KontinuityFlow<
         job.asNativeCancellable()
     }
 
-    return flow.freeze()
+    return flow
 }

@@ -49,7 +49,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 // KotlinX
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
                 // Kontinuity
                 implementation(project(":kontinuity-core"))
@@ -62,7 +62,7 @@ kotlin {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
 
-                implementation("io.mockative:mockative:1.2.1")
+                implementation("io.mockative:mockative:1.2.5")
             }
         }
 
@@ -103,7 +103,7 @@ dependencies {
     configurations
         .filter { it.name.startsWith("ksp") && it.name.contains("Test") }
         .forEach {
-            add(it.name, "io.mockative:mockative-processor:1.2.1")
+            add(it.name, "io.mockative:mockative-processor:1.2.5")
         }
 }
 
@@ -124,7 +124,7 @@ android {
 
     dependencies {
         androidTestImplementation("androidx.test:runner:1.4.0")
-        androidTestUtil("androidx.test:orchestrator:1.4.0")
+        androidTestUtil("androidx.test:orchestrator:1.4.1")
     }
 }
 

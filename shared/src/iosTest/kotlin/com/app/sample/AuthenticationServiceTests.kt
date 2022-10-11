@@ -34,7 +34,8 @@ class AuthenticationServiceTests {
             val mutex = Mutex()
             mutex.lock()
 
-            kAuthenticationService.loginK(request).invoke(
+            val kSuspend = kAuthenticationService.loginK(request)
+            kSuspend.invoke(
                 { value, _ ->
                     resultOrNull = Result.success(value)
                     mutex.unlock()
