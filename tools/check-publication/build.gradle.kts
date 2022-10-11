@@ -38,7 +38,7 @@ kotlin {
     sourceSets {
         val commonTest by getting {
             dependencies {
-                implementation("io.mockative:kontinuity:$version")
+                implementation("io.mockative:kontinuity-core:$version")
             }
         }
     }

@@ -16,8 +16,8 @@ rootProject.name = "Kontinuity"
 
 if (startParameter.projectProperties.containsKey("check_publication")) {
     include(":tools:check-publication")
+} else {
+    include(":shared")
+    include(":kontinuity-core")
+    include(":kontinuity-processor")
 }
-
-include(":shared")
-include(":kontinuity-core")
-include(":kontinuity-processor")
