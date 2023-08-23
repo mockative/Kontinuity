@@ -26,6 +26,40 @@ public func asyncStream<Output, Failure: Error, Unit>(for kontinuityFlow: @escap
     }
 }
 
+/// Wraps the `KontinuityStateFlow` in an `AsyncThrowingStream`.
+/// - Parameter kontinuityStateFlow: The kontinuity flow to collect.
+/// - Returns: An stream that yields the collected values.
+public func asyncStream<Output, Failure: Error, Unit>(for kontinuityFlow: @escaping KontinuityStateFlow<Output, Failure, Unit>) -> AsyncThrowingStream<Output, Error> {
+    let asyncStreamActor = AsyncStreamActor<Output, Unit>()
+    return AsyncThrowingStream { continuation in
+        continuation.onTermination = { @Sendable _ in
+            Task { await asyncStreamActor.cancel() }
+        }
+        Task {
+            let kontinuityCancellable = kontinuityFlow(
+                "subscribe",
+                { value, unit in
+                    // This won't actually be called
+                    return unit
+                },
+                { item, unit in
+                    continuation.yield(item)
+                    return unit
+                }, { error, unit in
+                    if let error = error {
+                        continuation.finish(throwing: error)
+                    } else {
+                        continuation.finish(throwing: nil)
+                    }
+                    return unit
+                }
+            )
+            
+            await asyncStreamActor.setKontinuityCancellable(kontinuityCancellable)
+        }
+    }
+}
+
 internal actor AsyncStreamActor<Output, Unit> {
     
     private var isCancelled = false
