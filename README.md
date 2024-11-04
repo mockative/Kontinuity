@@ -27,14 +27,14 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("io.mockative:kontinuity-core:2.0.0")
+                implementation("io.mockative:kontinuity-core:2.0.1")
             }
         }
     }
 }
 
 dependencies {
-    add("kspIos", "io.mockative:kontinuity-processor:2.0.0")
+    add("kspIos", "io.mockative:kontinuity-processor:2.0.1")
 }
 ```
 
