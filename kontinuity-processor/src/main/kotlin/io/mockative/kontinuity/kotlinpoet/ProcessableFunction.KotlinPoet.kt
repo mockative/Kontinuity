@@ -23,20 +23,22 @@ internal fun ProcessableFunction.buildFunSpec(): FunSpec {
         .addModifiers(if (override) listOf(KModifier.OVERRIDE) else listOf(KModifier.OPEN))
         .addTypeVariables(buildTypeParameterSpecs())
         .addParameters(buildParameterSpecs())
-        .addAnnotations(buildThrowsAnnotationSpecs())
 
     val arguments = buildArgumentList()
 
     return when (functionType) {
         is FunctionType.Blocking -> when (val returnType = functionType.returnType) {
             is ReturnType.Value -> builder
+                .addAnnotations(buildThrowsAnnotationSpecs())
                 .returns(returnType.type)
                 .addStatement("return wrapped.$sourceMemberName($arguments)")
                 .build()
             is ReturnType.Flow -> builder
+                .addAnnotations(buildThrowsAnnotationSpecs())
                 .implementsFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             is ReturnType.StateFlow -> builder
+                .addAnnotations(buildThrowsAnnotationSpecs())
                 .implementsStateFlow(returnType.elementType, sourceMemberName, arguments, scopeDeclaration)
                 .build()
             else -> throw IllegalStateException("Unknown return type ${returnType::class}")
