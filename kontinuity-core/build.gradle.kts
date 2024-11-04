@@ -9,27 +9,24 @@ version = findProperty("project.version") as String
 kotlin {
     sourceSets {
         // Common
-        val commonMain by getting {
+        commonMain.configure {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:atomicfu:0.18.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:atomicfu:0.25.0")
             }
         }
+
+        listOf(jsMain, jvmMain, androidMain, wasmJsMain, wasmWasiMain, androidNativeMain, linuxMain, mingwMain)
+            .forEach { sourceSet ->
+                sourceSet.configure {
+                    kotlin.srcDir("src/nonDarwinMain/kotlin")
+                }
+            }
 
         all {
             languageSettings {
                 optIn("kotlin.RequiresOptIn")
             }
-        }
-    }
-}
-
-afterEvaluate {
-    kotlin.targets["metadata"].compilations.forEach { compilation ->
-        compilation.compileKotlinTask.doFirst {
-            compilation.compileDependencyFiles = files(
-                compilation.compileDependencyFiles.filterNot { it.absolutePath.endsWith("klib/common/stdlib") }
-            )
         }
     }
 }

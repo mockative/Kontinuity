@@ -7,9 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.native.concurrent.SharedImmutable
 
-@SharedImmutable
 @KontinuityScope
 internal val authenticationServiceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 

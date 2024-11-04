@@ -1,8 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import java.util.*
 
 plugins {
-    `maven-publish`
     signing
+    id("com.vanniktech.maven.publish")
 }
 
 val props = Properties().apply {
@@ -26,62 +27,37 @@ val props = Properties().apply {
     loadEnv("sonatype.repository", "SONATYPE_REPOSITORY")
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-}
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-publishing {
-    repositories {
-        maven {
-            name = "Sonatype"
-            url = props.getProperty("sonatype.repository")
-                ?.let { uri("https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/$it") }
-                ?: uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
+    signAllPublications()
 
-            credentials {
-                username = props.getProperty("sonatype.username")
-                password = props.getProperty("sonatype.password")
+    pom {
+        name = "Kontinuity"
+        description = "Effortless use `suspend` and `Flow<T>` in non-JVM Kotlin Multiplatform targets."
+        inceptionYear = "2022"
+        url = "http://mockative.io/kontinuity"
+
+        licenses {
+            license {
+                name = "MIT"
+                url = "https://github.com/mockative/kontinuity/LICENSE"
+                distribution = "https://github.com/mockative/kontinuity/LICENSE"
             }
         }
 
-        maven {
-            name = "SonatypeSnapshot"
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            credentials {
-                username = props.getProperty("sonatype.username")
-                password = props.getProperty("sonatype.password")
+        developers {
+            developer {
+                id = "Nillerr"
+                name = "Nicklas Jensen"
+                email = "nicklas@mockative.io"
             }
         }
-    }
 
-    publications {
-        withType<MavenPublication> {
-            artifact(javadocJar.get())
-
-            pom {
-                name.set("Kontinuity")
-                description.set("Effortless use `suspend` and `Flow<T>` in non-JVM Kotlin Multiplatform targets.")
-                url.set("http://mockative.io/kontinuity")
-
-                licenses {
-                    license {
-                        name.set("MIT")
-                        url.set("https://github.com/mockative/kontinuity/LICENSE")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("Nillerr")
-                        name.set("Nicklas Jensen")
-                        email.set("nicklas@mockative.io")
-                    }
-                }
-
-                scm {
-                    url.set("https://github.com/mockative/kontinuity")
-                }
-            }
+        scm {
+            url = "https://github.com/mockative/kontinuity"
+            connection = "scm:git:git://github.com/mockative/kontinuity.git"
+            developerConnection = "scm:git:ssh://github.com/mockative/kontinuity.git"
         }
     }
 }

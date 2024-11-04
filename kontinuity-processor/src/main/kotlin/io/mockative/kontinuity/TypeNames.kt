@@ -7,6 +7,7 @@ val KOTLIN_ANY = ClassName("kotlin", "Any")
 val KCLASS = ClassName("kotlin.reflect", "KClass")
 
 val KONTINUITY_ANNOTATION = Kontinuity::class.asClassName()
+val KONTINUITY_MEMBER_ANNOTATION = KontinuityMember::class.asClassName()
 val KONTINUITY_CONFIGURATION_ANNOTATION = KontinuityConfiguration::class.asClassName()
 val KONTINUITY_GENERATED_ANNOTATION = KontinuityGenerated::class.asClassName()
 val KONTINUITY_SCOPE_ANNOTATION = KontinuityScope::class.asClassName()

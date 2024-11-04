@@ -1,13 +1,11 @@
 package io.mockative.kontinuity
 
 import kotlinx.coroutines.CoroutineScope
-import kotlin.native.concurrent.SharedImmutable
 
 /**
  * Designates a top-level property as the [CoroutineScope] of coroutines launched from within that
  * file, or as the default [CoroutineScope] used for all coroutines launched by Kontinuity, unless
- * otherwise overwritten in a file. The property annotated with this annotated must also be
- * annotated with [SharedImmutable].
+ * otherwise overwritten in a file.
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)

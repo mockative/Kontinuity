@@ -1,14 +1,18 @@
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
 plugins {
     kotlin("multiplatform")
+    id("com.android.library")
 }
 
 kotlin {
+    jvmToolchain(11)
+
     jvm()
 
-    js {
+    androidTarget()
+
+    js(IR) {
         browser()
         nodejs()
     }
@@ -19,9 +23,9 @@ kotlin {
 
     watchosArm32()
     watchosArm64()
-    watchosX86()
     watchosX64()
     watchosSimulatorArm64()
+    watchosDeviceArm64()
 
     tvosArm64()
     tvosX64()
@@ -30,95 +34,30 @@ kotlin {
     macosX64()
     macosArm64()
 
-//    linuxArm64()
-//    linuxArm32Hfp()
+    linuxArm64()
     linuxX64()
 
     mingwX64()
-//    mingwX86()
 
-//    wasm32()
-
-    @Suppress("UNUSED_VARIABLE")
-    sourceSets {
-        // Common
-        val commonMain by getting
-
-        // Non-Darwin
-        val nonDarwinMain by creating { dependsOn(commonMain) }
-
-        // JVM
-        val jvmMain by getting { dependsOn(nonDarwinMain) }
-
-        // JS
-        val jsMain by getting { dependsOn(nonDarwinMain) }
-
-        // Native
-        val nativeMain by creating { dependsOn(commonMain) }
-
-        // Darwin (iOS, watchOS, tvOS, macOS)
-        val darwinMain by creating { dependsOn(nativeMain) }
-
-        // iOS
-        val iosMain by creating { dependsOn(darwinMain) }
-
-        val iosX64Main by getting { dependsOn(iosMain) }
-        val iosArm64Main by getting { dependsOn(iosMain) }
-        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
-
-        // watchOS
-        val watchosMain by creating { dependsOn(darwinMain) }
-
-        val watchosArm32Main by getting { dependsOn(watchosMain) }
-        val watchosArm64Main by getting { dependsOn(watchosMain) }
-        val watchosX86Main by getting { dependsOn(watchosMain) }
-        val watchosX64Main by getting { dependsOn(watchosMain) }
-        val watchosSimulatorArm64Main by getting { dependsOn(watchosMain) }
-
-        // tvOS
-        val tvosMain by creating { dependsOn(darwinMain) }
-
-        val tvosArm64Main by getting { dependsOn(tvosMain) }
-        val tvosX64Main by getting { dependsOn(tvosMain) }
-        val tvosSimulatorArm64Main by getting { dependsOn(tvosMain) }
-
-        // macOS
-        val macosMain by creating { dependsOn(darwinMain) }
-
-        val macosX64Main by getting { dependsOn(macosMain) }
-        val macosArm64Main by getting { dependsOn(macosMain) }
-
-        // Linux
-        val linuxMain by creating {
-            dependsOn(nativeMain)
-            dependsOn(nonDarwinMain)
-        }
-
-//        val linuxArm64Main by getting { dependsOn(linuxMain) }
-//        val linuxArm32HfpMain by getting { dependsOn(linuxMain) }
-        val linuxX64Main by getting { dependsOn(linuxMain) }
-
-        // mingw (Windows)
-        val mingwMain by creating {
-            dependsOn(nativeMain)
-            dependsOn(nonDarwinMain)
-        }
-
-        val mingwX64Main by getting { dependsOn(mingwMain) }
-//        val mingwX86Main by getting { dependsOn(mingwMain) }
-
-        // wasm
-//        val wasmMain by creating {
-//            dependsOn(commonMain)
-//            dependsOn(nonDarwinMain)
-//        }
-//
-//        val wasm32Main by getting { dependsOn(wasmMain) }
+    wasmJs {
+        browser()
+        nodejs()
+        generateTypeScriptDefinitions()
     }
+
+    wasmWasi {
+        nodejs()
+    }
+
+    applyDefaultHierarchyTemplate()
 }
 
-rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
-    rootProject.extensions.configure<NodeJsRootExtension> {
-        download = false
+android {
+    compileSdk = 33
+    namespace = "io.mockative"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }

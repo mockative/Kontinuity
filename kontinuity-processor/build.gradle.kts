@@ -16,11 +16,14 @@ kotlin {
                 implementation(project(":kontinuity-core"))
 
                 // KSP
-                implementation("com.google.devtools.ksp:symbol-processing-api:1.7.20-1.0.6")
+                implementation("com.google.devtools.ksp:symbol-processing-api:2.0.21-1.0.26")
 
                 // KotlinPoet
-                implementation("com.squareup:kotlinpoet:1.12.0")
-                implementation("com.squareup:kotlinpoet-ksp:1.11.0")
+                implementation("com.squareup:kotlinpoet:1.18.1")
+                implementation("com.squareup:kotlinpoet-ksp:1.18.1")
+
+                // Kotlin
+                implementation(kotlin("reflect"))
             }
 
             kotlin.srcDir("src/main/kotlin")

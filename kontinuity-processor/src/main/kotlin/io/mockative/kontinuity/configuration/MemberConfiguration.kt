@@ -1,23 +1,28 @@
 package io.mockative.kontinuity.configuration
 
-import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import io.mockative.kontinuity.FunctionType
+import io.mockative.kontinuity.KONTINUITY_MEMBER_ANNOTATION
 import io.mockative.kontinuity.KontinuityGeneration
 import io.mockative.kontinuity.KontinuityMember
 import io.mockative.kontinuity.ReturnType
+import io.mockative.kontinuity.getAnnotationsByClassName
+import io.mockative.kontinuity.getValue
 
 data class MemberConfiguration(
     val name: String,
     val generate: Boolean,
 ) {
     companion object {
+        private val defaults = KontinuityMember()
+
         private fun getGenerate(
-            annotation: KontinuityMember?,
+            annotation: KSAnnotation?,
             parentConfiguration: ClassConfiguration
         ): Boolean {
-            return annotation?.generate ?: when (parentConfiguration.generation) {
+            return annotation?.getValue("generate", defaults.generate) ?: when (parentConfiguration.generation) {
                 KontinuityGeneration.UNSPECIFIED -> true
                 KontinuityGeneration.NONE -> false
                 KontinuityGeneration.OPT_OUT -> true
@@ -26,12 +31,12 @@ data class MemberConfiguration(
         }
 
         private fun fromAnnotation(
-            annotation: KontinuityMember?,
+            annotation: KSAnnotation?,
             returnType: ReturnType,
             parentConfiguration: ClassConfiguration
         ): MemberConfiguration {
             return MemberConfiguration(
-                name = annotation?.name?.ifEmpty { null } ?: when (returnType) {
+                name = annotation?.getValue("name", defaults.name)?.ifEmpty { null } ?: when (returnType) {
                     is ReturnType.Flow, is ReturnType.StateFlow -> parentConfiguration.flow
                     is ReturnType.Value -> parentConfiguration.members
                     else -> TODO()
@@ -45,17 +50,17 @@ data class MemberConfiguration(
             returnType: ReturnType,
             parentConfiguration: ClassConfiguration
         ): MemberConfiguration {
-            val annotation = declaration.getAnnotationsByType(KontinuityMember::class).firstOrNull()
+            val annotation = declaration.getAnnotationsByClassName(KONTINUITY_MEMBER_ANNOTATION).firstOrNull()
             return fromAnnotation(annotation, returnType, parentConfiguration)
         }
 
         private fun fromAnnotation(
-            annotation: KontinuityMember?,
+            annotation: KSAnnotation?,
             functionType: FunctionType,
             parentConfiguration: ClassConfiguration
         ): MemberConfiguration {
             return MemberConfiguration(
-                name = annotation?.name?.ifEmpty { null } ?: when (functionType) {
+                name = annotation?.getValue("name", defaults.name)?.ifEmpty { null } ?: when (functionType) {
                     is FunctionType.Suspending -> when (functionType.returnType) {
                         is ReturnType.Flow, is ReturnType.StateFlow -> parentConfiguration.suspendFlow
                         is ReturnType.Value -> parentConfiguration.suspend
@@ -77,7 +82,7 @@ data class MemberConfiguration(
             functionType: FunctionType,
             parentConfiguration: ClassConfiguration
         ): MemberConfiguration {
-            val annotation = declaration.getAnnotationsByType(KontinuityMember::class).firstOrNull()
+            val annotation = declaration.getAnnotationsByClassName(KONTINUITY_MEMBER_ANNOTATION).firstOrNull()
             return fromAnnotation(annotation, functionType, parentConfiguration)
         }
     }

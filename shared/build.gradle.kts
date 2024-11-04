@@ -1,30 +1,32 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
 
     id("com.google.devtools.ksp")
+
+    id("io.mockative") version "3.0.0"
 }
 
 kotlin {
-    // JS
-    js {
+    jvmToolchain(11)
+
+    js(IR) {
         browser()
         nodejs()
     }
 
-    // Android
-    android()
-
-    // iOS
-    val iosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
-        System.getenv("SDK_NAME")?.startsWith("iphoneos") == true -> ::iosArm64
-        System.getProperty("os.arch") == "aarch64" -> ::iosSimulatorArm64
-        else -> ::iosX64
+    wasmWasi {
+        nodejs()
     }
 
-    iosTarget("ios") {
+    jvm()
+
+    androidTarget()
+
+    val iosX64 = iosX64()
+    val iosArm64 = iosArm64()
+    val iosSimulatorArm64 = iosSimulatorArm64()
+    configure(listOf(iosX64, iosArm64, iosSimulatorArm64)) {
         binaries {
             framework {
                 baseName = "shared"
@@ -32,87 +34,48 @@ kotlin {
         }
     }
 
-    val macosTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget = when {
-        System.getenv("ARCHS") == "arm64" -> ::macosArm64
-        else -> ::macosX64
-    }
-
-    macosTarget("macos") {
-        binaries {
-            framework {
-                baseName = "shared"
-            }
-        }
-    }
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain.configure {
             dependencies {
-                // KotlinX
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
-                // Kontinuity
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
                 implementation(project(":kontinuity-core"))
             }
-
-            kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
 
-                implementation("io.mockative:mockative:1.2.5")
+        commonTest.configure {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+                implementation(kotlin("test"))
             }
         }
 
-        val androidAndroidTest by getting {
+        jvmTest.configure {
             dependencies {
                 implementation(kotlin("test-junit"))
                 implementation("junit:junit:4.13.2")
             }
         }
 
-        val androidMain by getting
-        val androidTest by getting {
-            dependsOn(androidAndroidTest)
-        }
-
-        val iosMain by getting {
-            kotlin.srcDir("build/generated/ksp/ios/iosMain/kotlin")
-        }
-        val iosTest by getting
-
-        val jsMain by getting {
-            kotlin.srcDir("build/generated/ksp/js/jsMain/kotlin")
-        }
-        val jsTest by getting {
+        androidUnitTest.configure {
             dependencies {
-                implementation(kotlin("test-js"))
+                implementation(kotlin("test-junit"))
+                implementation("junit:junit:4.13.2")
             }
         }
-
-        val macosMain by getting {
-            kotlin.srcDir("build/generated/ksp/macos/macosMain/kotlin")
-        }
-        val macosTest by getting
     }
 }
 
-dependencies {
-    configurations
-        .filter { it.name.startsWith("ksp") && it.name.contains("Test") }
-        .forEach {
-            add(it.name, "io.mockative:mockative-processor:1.2.5")
-        }
-}
-
 android {
-    compileSdk = 31
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    compileSdk = 33
+    namespace = "io.mockative"
+
+    // sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         testInstrumentationRunnerArguments["clearPackageData"] = "true"
@@ -123,13 +86,14 @@ android {
     }
 
     dependencies {
-        androidTestImplementation("androidx.test:runner:1.4.0")
-        androidTestUtil("androidx.test:orchestrator:1.4.1")
+        androidTestImplementation("androidx.test:runner:1.5.2")
+        androidTestUtil("androidx.test:orchestrator:1.4.2")
     }
 }
 
 dependencies {
-    add("kspMacos", project(":kontinuity-processor"))
-    add("kspIos", project(":kontinuity-processor"))
+    add("kspIosArm64", project(":kontinuity-processor"))
+    add("kspIosSimulatorArm64", project(":kontinuity-processor"))
+    add("kspIosX64", project(":kontinuity-processor"))
     add("kspJs", project(":kontinuity-processor"))
 }

@@ -21,48 +21,53 @@ class KontinuitySymbolProcessor(
     private var isProcessed = false
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (isProcessed) {
+        try {
+            if (isProcessed) {
+                return emptyList()
+            }
+
+            val startTime = System.currentTimeMillis()
+
+            // Default Configuration
+            val defaultConfiguration = DefaultConfiguration()
+            log.info("Default Configuration: $defaultConfiguration")
+
+            // KSP Argument Configuration
+            val kspArgumentConfiguration = KSPArgumentConfiguration
+                .fromOptions(options, defaultConfiguration)
+
+            log.info("KSP Argument Configuration: $kspArgumentConfiguration")
+
+            // Source Configuration
+            val sourceConfiguration = SourceConfiguration
+                .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
+
+            log.info("Source Configuration: $sourceConfiguration")
+
+            // Default Scope Declaration
+            val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
+            log.warn("Default Scope: $defaultScopeDeclaration")
+
+            // Annotated Types
+            val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration, defaultScopeDeclaration)
+            processableFiles.forEach { file ->
+                FileSpec.builder(file.packageName, "${file.fileName.removeSuffix(".kt")}.Kontinuity")
+                    .addWrapperTypes(file.types)
+                    .build()
+                    .writeTo(codeGenerator, aggregating = false)
+            }
+
+            val endTime = System.currentTimeMillis()
+
+            val duration = (endTime - startTime).toDouble() / 1000.0
+            log.info("Processing finished after ${String.format("%.2f", duration)}")
+
+            isProcessed = true
+
             return emptyList()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw e
         }
-
-        val startTime = System.currentTimeMillis()
-
-        // Default Configuration
-        val defaultConfiguration = DefaultConfiguration()
-        log.info("Default Configuration: $defaultConfiguration")
-
-        // KSP Argument Configuration
-        val kspArgumentConfiguration = KSPArgumentConfiguration
-            .fromOptions(options, defaultConfiguration)
-
-        log.info("KSP Argument Configuration: $kspArgumentConfiguration")
-
-        // Source Configuration
-        val sourceConfiguration = SourceConfiguration
-            .fromResolver(resolver, log, kspArgumentConfiguration) ?: return emptyList()
-
-        log.info("Source Configuration: $sourceConfiguration")
-
-        // Default Scope Declaration
-        val defaultScopeDeclaration = DefaultKontinuityScopeDeclaration.fromResolver(resolver)
-        log.warn("Default Scope: $defaultScopeDeclaration")
-
-        // Annotated Types
-        val processableFiles = ProcessableFile.fromResolver(resolver, sourceConfiguration, defaultScopeDeclaration)
-        processableFiles.forEach { file ->
-            FileSpec.builder(file.packageName, "${file.fileName.removeSuffix(".kt")}.Kontinuity")
-                .addWrapperTypes(file.types)
-                .build()
-                .writeTo(codeGenerator, aggregating = false)
-        }
-
-        val endTime = System.currentTimeMillis()
-
-        val duration = (endTime - startTime).toDouble() / 1000.0
-        log.info("Processing finished after ${String.format("%.2f", duration)}")
-
-        isProcessed = true
-
-        return emptyList()
     }
 }
